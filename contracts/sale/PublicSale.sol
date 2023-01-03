@@ -3,12 +3,10 @@ pragma solidity ^0.8.16;
 pragma abicoder v2;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {
-    ReentrancyGuard
-} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../interfaces/IPublicSale.sol";
 import "../common/ProxyAccessCommon.sol";
+// import "../proxy/BaseProxyStorage.sol";
 import "./PublicSaleStorage.sol";
 
 import "../libraries/LibPublicSale.sol";
@@ -29,7 +27,6 @@ interface IIVestingPublicFundAction {
 contract PublicSale is
     PublicSaleStorage,
     ProxyAccessCommon,
-    ReentrancyGuard,
     IPublicSale
 {
     using SafeERC20 for IERC20;
@@ -580,7 +577,7 @@ contract PublicSale is
     }
 
     /// @inheritdoc IPublicSale
-    function addWhiteList() external override nonReentrant {
+    function addWhiteList() external override {
         require(
             block.timestamp >= startAddWhiteTime,
             "PublicSale: whitelistStartTime has not passed"
@@ -660,7 +657,6 @@ contract PublicSale is
         override
         nonZero(_amount)
         nonZero(totalClaimCounts)
-        nonReentrant
     {
         require(
             block.timestamp >= startExclusiveTime,
@@ -704,7 +700,6 @@ contract PublicSale is
     )
         public
         override
-        nonReentrant
     {
         require(
             block.timestamp >= startDepositTime,

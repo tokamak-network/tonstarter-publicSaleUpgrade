@@ -37,6 +37,7 @@ const {
 // let UniswapV3Factory = require('../abis/UniswapV3Factory.json');
 
 const PublicSale_ABI = require('../../artifacts/contracts/sale/PublicSale.sol/PublicSale.json');
+const PublicSaleProxy_ABI = require('../../artifacts/contracts/sale/PublicSaleProxy.sol/PublicSaleProxy.json');
 // const PublicSaleTest_ABI = require('../../artifacts/contracts/sale/PublicSaleTest.sol/PublicSaleTest.json');
 // const PublicSale2_ABI = require('../../artifacts/contracts/sale/PublicSale2.sol/PublicSale2.json');
 // const PublicSaleForDoM_ABI = require('../../artifacts/contracts/sale/PublicSaleForDoM.sol/PublicSaleForDoM.json');
@@ -237,6 +238,8 @@ describe("Sale", () => {
     let initialliquidityVault;
     let initialVaultFactory;
     let initialVaultLogic;
+
+    let publicProxy;
 
     let vestingPublicFundLogic;
     let vestingPublicFundFactory;
@@ -774,6 +777,7 @@ describe("Sale", () => {
             publicSaleContract.contractAddress = info.contractAddress;
 
             saleContract = new ethers.Contract( publicSaleContract.contractAddress, PublicSale_ABI.abi, ethers.provider );
+            publicProxy = new ethers.Contract( publicSaleContract.contractAddress, PublicSaleProxy_ABI.abi, ethers.provider );
             let deployTime1 = await saleContract.deployTime();
             // console.log(Number(deployTime1))
             deployTime = Number(await time.latest())
@@ -1143,6 +1147,11 @@ describe("Sale", () => {
                 await ethers.provider.send('evm_mine');
             })
 
+            it("pauseProxy check", async () => {
+                let pause1 = await publicProxy.pauseProxy();
+                console.log("pause1 : ",pause1);
+            })
+
             it("#6-1-2. addWhiteList", async () => {
                 console.log("1")
                 let tx = Number(await saleContract.connect(tester1.account).tiersAccount(1))
@@ -1163,17 +1172,16 @@ describe("Sale", () => {
                 await saleContract.connect(tester3.account).addWhiteList()
                 let tx6 = Number(await saleContract.connect(tester3.account).tiersAccount(3))
                 expect(tx6).to.be.equal(1)
-
+                
                 let tx7 = Number(await saleContract.connect(tester4.account).tiersAccount(4))
                 expect(tx7).to.be.equal(0)
                 await saleContract.connect(tester4.account).addWhiteList()
                 let tx8 = Number(await saleContract.connect(tester4.account).tiersAccount(4))
                 expect(tx8).to.be.equal(1)
 
-                console.log("3")
                 let tx9 = saleContract.connect(tester4.account).addWhiteList()
                 await expect(tx9).to.be.revertedWith("PublicSale: already attended")
-                console.log("4")
+
                 let big300000 = ethers.utils.parseUnits("300000", 18);
                 let big600000 = ethers.utils.parseUnits("600000", 18);
                 let tx10 = Number(await saleContract.calculTierAmount(account6.address))
@@ -1181,25 +1189,26 @@ describe("Sale", () => {
 
                 let tx11 = Number(await saleContract.calculTierAmount(account4.address))
                 expect(tx11).to.be.equal(Number(big600000))
-                console.log("5")
+
                 let tx12 = Number(await saleContract.connect(tester6.account).tiersAccount(4))
                 expect(tx12).to.be.equal(1)
-
-                console.log("6")
                 await saleContract.connect(tester6.account).addWhiteList()
                 let tx13 = Number(await saleContract.connect(tester6.account).tiersAccount(4))
                 expect(tx13).to.be.equal(2)
 
-                console.log("7")
                 let tx14 = Number(await saleContract.calculTierAmount(account6.address))
                 expect(tx14).to.be.equal(Number(big300000))
 
                 let tx15 = Number(await saleContract.calculTierAmount(account4.address))
                 expect(tx15).to.be.equal(Number(big300000))
-                
-                console.log("8")
+
                 let tx16 = Number(await saleContract.totalWhitelists())
                 expect(tx16).to.be.equal(5)
+            })
+
+            it("pauseProxy check2", async () => {
+                let pause2 = await publicProxy.pauseProxy();
+                console.log("pause2 : ",pause2);
             })
 
             it("#6-1-3. calculation the inputAmount", async () => {
@@ -1321,11 +1330,11 @@ describe("Sale", () => {
 
                 // await getToken.connect(account1).approveAndCall(saleContract.address, big50, 0);
                 await getToken.connect(account1).approve(saleContract.address, big50);
-                await saleContract.connect(account1).deposit(big50)
+                await saleContract.connect(account1).deposit(account1.address,big50)
 
                 // await wton.connect(account2).approveAndCall(saleContract.address, account2BigWTONAmount, 0);
                 await wton.connect(account2).approve(saleContract.address, account2BigWTONAmount);
-                await saleContract.connect(account2).deposit(big100)
+                await saleContract.connect(account2).deposit(account2.address,big100)
 
                 // var dec = 300000000000000000000;
                 // var hex = dec.toString(16);
@@ -1340,11 +1349,11 @@ describe("Sale", () => {
 
                 // await getToken.connect(account3).approveAndCall(saleContract.address, big150, 0);
                 await getToken.connect(account3).approve(saleContract.address, big150);
-                await saleContract.connect(account3).deposit(big150)
+                await saleContract.connect(account3).deposit(account3.address,big150)
 
                 // await getToken.connect(account4).approveAndCall(saleContract.address, big200, 0);
                 await getToken.connect(account4).approve(saleContract.address, big200);
-                await saleContract.connect(account4).deposit(big200)
+                await saleContract.connect(account4).deposit(account4.address,big200)
 
                 let tx = await saleContract.usersOpen(account1.address)
                 expect(Number(tx.depositAmount)).to.be.equal(Number(big50))
