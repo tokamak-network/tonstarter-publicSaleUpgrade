@@ -36,7 +36,7 @@ const {
 
 // let UniswapV3Factory = require('../abis/UniswapV3Factory.json');
 
-// const PublicSale_ABI = require('../../artifacts/contracts/sale/publicSale.sol/PublicSale.json');
+const PublicSale_ABI = require('../../artifacts/contracts/sale/PublicSale.sol/PublicSale.json');
 // const PublicSaleTest_ABI = require('../../artifacts/contracts/sale/PublicSaleTest.sol/PublicSaleTest.json');
 // const PublicSale2_ABI = require('../../artifacts/contracts/sale/PublicSale2.sol/PublicSale2.json');
 // const PublicSaleForDoM_ABI = require('../../artifacts/contracts/sale/PublicSaleForDoM.sol/PublicSaleForDoM.json');
@@ -229,6 +229,7 @@ describe("Sale", () => {
     let publicFactory;
     let deploySaleImpl;
     let deploySaleImpl2;
+    let libPublicSale;
     let libPublicSale2;
     let uniswapRouter;
     let testTemp;
@@ -636,31 +637,39 @@ describe("Sale", () => {
             expect(code).to.not.eq("0x");
         })
 
-        //deploy publicSale and publicSaleProxy and transfer TON, WTON
+        it("#3-3. Deploy the LibPublicSale", async () => {
+            const LibPublicSale = await ethers.getContractFactory("LibPublicSale");
+            libPublicSale = await LibPublicSale.connect(saleOwner).deploy();
+        })
+
         it("#3-3. Initialize PublicSale", async function () {
-            let PublicSale = await ethers.getContractFactory("PublicSale");
+            let PublicSale = await ethers.getContractFactory("PublicSale",{
+                libraries: {
+                    LibPublicSale: libPublicSale.address
+                }
+            });
             deploySaleImpl = await PublicSale.connect(saleOwner).deploy();
 
             let code = await saleOwner.provider.getCode(deploySaleImpl.address);
             expect(code).to.not.eq("0x");
         });
 
-        it("#3-4. Deploy LibPublicSale2 ", async function () {
-            const LibPublicSale2 = await ethers.getContractFactory("LibPublicSale2");
-            libPublicSale2 = await LibPublicSale2.connect(saleOwner).deploy();
-        });
+        // it("#3-4. Deploy LibPublicSale2 ", async function () {
+        //     const LibPublicSale2 = await ethers.getContractFactory("LibPublicSale2");
+        //     libPublicSale2 = await LibPublicSale2.connect(saleOwner).deploy();
+        // });
 
-        it("#3-5. Initialize PublicSale2", async function () {
-            let PublicSale2 = await ethers.getContractFactory("PublicSale2",{
-                libraries: {
-                    LibPublicSale2: libPublicSale2.address
-                }
-            });
-            deploySaleImpl2 = await PublicSale2.connect(saleOwner).deploy();
+        // it("#3-5. Initialize PublicSale2", async function () {
+        //     let PublicSale2 = await ethers.getContractFactory("PublicSale2",{
+        //         libraries: {
+        //             LibPublicSale2: libPublicSale2.address
+        //         }
+        //     });
+        //     deploySaleImpl2 = await PublicSale2.connect(saleOwner).deploy();
 
-            let code = await saleOwner.provider.getCode(deploySaleImpl2.address);
-            expect(code).to.not.eq("0x");
-        });
+        //     let code = await saleOwner.provider.getCode(deploySaleImpl2.address);
+        //     expect(code).to.not.eq("0x");
+        // });
 
         it("#3-6. setting the Proxy basicSet from not admin", async () => {
             await expect(publicFactory.connect(account1).basicSet(
@@ -691,21 +700,21 @@ describe("Sale", () => {
             expect(tx).to.be.equal(deploySaleImpl.address);
         });
 
-        it("#3-8. change the publicSale Address 1 -> 2 from admin", async () => {
-            await publicFactory.connect(saleTokenOwner).basicSet(
-                [
-                    getToken.address,
-                    wton.address,
-                    lockTOS.address,
-                    tos.address,
-                    uniswapInfo.swapRouter,
-                    deploySaleImpl2.address
-                ]
-            )
+        // it("#3-8. change the publicSale Address 1 -> 2 from admin", async () => {
+        //     await publicFactory.connect(saleTokenOwner).basicSet(
+        //         [
+        //             getToken.address,
+        //             wton.address,
+        //             lockTOS.address,
+        //             tos.address,
+        //             uniswapInfo.swapRouter,
+        //             deploySaleImpl2.address
+        //         ]
+        //     )
 
-            let tx = await publicFactory.publicLogic();
-            expect(tx).to.be.equal(deploySaleImpl2.address);
-        });
+        //     let tx = await publicFactory.publicLogic();
+        //     expect(tx).to.be.equal(deploySaleImpl2.address);
+        // });
         
         it("#3-9. set allset from admin", async () => {
             await publicFactory.connect(saleTokenOwner).allSet(
@@ -987,339 +996,367 @@ describe("Sale", () => {
         })
     })
 
-    // describe("#5. setting the PublicSale", () => {
-    //     it("#5-1. check the balance (contract have the saleToken) ", async () => {
-    //         balance1 = await saleToken.balanceOf(saleContract.address)
+    describe("#5. setting the PublicSale", () => {
+        it("#5-1. check the balance (contract have the saleToken) ", async () => {
+            balance1 = await saleToken.balanceOf(saleContract.address)
 
-    //         expect(Number(balance1)).to.be.equal(Number(totalBigAmount))
-    //     })
+            expect(Number(balance1)).to.be.equal(Number(totalBigAmount))
+        })
 
-    //      //setting owner test
-    //     it('#5-2. setAllsetting caller not owner', async () => {
-    //         blocktime = Number(await time.latest())
-    //         whitelistStartTime = blocktime + 86400;
-    //         whitelistEndTime = whitelistStartTime + (86400*7);
-    //         exclusiveStartTime = whitelistEndTime + 1;
-    //         exclusiveEndTime = exclusiveStartTime + (86400*7);
-    //         depositStartTime = exclusiveEndTime;
-    //         depositEndTime = depositStartTime + (86400*7);
-    //         claimTime1 = depositEndTime + (86400 * 20);
-    //         claimTime2 = claimTime1 + (60 * 1);
-    //         claimTime3 = claimTime2 + (60 * 2);
-    //         claimTime4 = claimTime3 + (60 * 3);
-    //         claimTime5 = claimTime4 + (60 * 4);
+         //setting owner test
+        it('#5-2. setAllsetting caller not owner', async () => {
+            blocktime = Number(await time.latest())
+            whitelistStartTime = blocktime + 86400;
+            whitelistEndTime = whitelistStartTime + (86400*7);
+            exclusiveStartTime = whitelistEndTime + 1;
+            exclusiveEndTime = exclusiveStartTime + (86400*7);
+            depositStartTime = exclusiveEndTime;
+            depositEndTime = depositStartTime + (86400*7);
+            claimTime1 = depositEndTime + (86400 * 20);
+            claimTime2 = claimTime1 + (60 * 1);
+            claimTime3 = claimTime2 + (60 * 2);
+            claimTime4 = claimTime3 + (60 * 3);
+            claimTime5 = claimTime4 + (60 * 4);
 
-    //         let tx = saleContract.connect(account1).setAllsetting(
-    //             [100, 200, 1000, 4000, 600, 1200, 2200, 6000],
-    //             [round1SaleAmount, round2SaleAmount, saleTokenPrice, payTokenPrice, hardcapAmount, changeTOS],
-    //             [setSnapshot, whitelistStartTime, whitelistEndTime, exclusiveStartTime, exclusiveEndTime, depositStartTime, depositEndTime, claimCounts],
-    //             [claimTime1,claimTime2,claimTime3,claimTime4,claimTime5],
-    //             [claimPercent1,claimPercent2,claimPercent3,claimPercent4,claimPercent5]
-    //         )
-    //         await expect(tx).to.be.revertedWith("Accessible: Caller is not an admin")
-    //     })
+            let tx = saleContract.connect(account1).setAllsetting(
+                [100, 200, 1000, 4000, 600, 1200, 2200, 6000],
+                [round1SaleAmount, round2SaleAmount, saleTokenPrice, payTokenPrice, hardcapAmount, changeTOS],
+                [setSnapshot, whitelistStartTime, whitelistEndTime, exclusiveStartTime, exclusiveEndTime, depositStartTime, depositEndTime, claimCounts],
+                [claimTime1,claimTime2,claimTime3,claimTime4,claimTime5],
+                [claimPercent1,claimPercent2,claimPercent3,claimPercent4,claimPercent5]
+            )
+            await expect(tx).to.be.revertedWith("Accessible: Caller is not an admin")
+        })
 
-    //     it("#5-3. setAllsetting snapshot error", async () => {
-    //         let smallsnapshot = setSnapshot-100;
-    //         let tx = saleContract.connect(saleOwner).setAllsetting(
-    //             [100, 200, 1000, 4000, 600, 1200, 2200, 6000],
-    //             [round1SaleAmount, round2SaleAmount, saleTokenPrice, payTokenPrice, hardcapAmount, changeTOS],
-    //             [smallsnapshot, whitelistStartTime, whitelistEndTime, exclusiveStartTime, exclusiveEndTime, depositStartTime, depositEndTime, claimCounts],
-    //             [claimTime1,claimTime2,claimTime3,claimTime4,claimTime5],
-    //             [claimPercent1,claimPercent2,claimPercent3,claimPercent4,claimPercent5]
-    //         )
-    //         await expect(tx).to.be.revertedWith("snapshot need later")
-    //     })
+        it("#5-3. setAllsetting snapshot error", async () => {
+            let smallsnapshot = setSnapshot-100;
+            let tx = saleContract.connect(saleOwner).setAllsetting(
+                [100, 200, 1000, 4000, 600, 1200, 2200, 6000],
+                [round1SaleAmount, round2SaleAmount, saleTokenPrice, payTokenPrice, hardcapAmount, changeTOS],
+                [smallsnapshot, whitelistStartTime, whitelistEndTime, exclusiveStartTime, exclusiveEndTime, depositStartTime, depositEndTime, claimCounts],
+                [claimTime1,claimTime2,claimTime3,claimTime4,claimTime5],
+                [claimPercent1,claimPercent2,claimPercent3,claimPercent4,claimPercent5]
+            )
+            await expect(tx).to.be.revertedWith("snapshot need later")
+        })
 
-    //     //PublicSale setting owner
-    //     it('#5-4. setAllsetting caller owner', async () => {
-    //         await saleContract.connect(saleOwner).setAllsetting(
-    //             [100, 200, 1000, 4000, 600, 1200, 2200, 6000],
-    //             [round1SaleAmount, round2SaleAmount, saleTokenPrice, payTokenPrice, hardcapAmount, changeTOS],
-    //             [setSnapshot, whitelistStartTime, whitelistEndTime, exclusiveStartTime, exclusiveEndTime, depositStartTime, depositEndTime, claimCounts],
-    //             [claimTime1,claimTime2,claimTime3,claimTime4,claimTime5],
-    //             [claimPercent1,claimPercent2,claimPercent3,claimPercent4,claimPercent5]
-    //         )
+        //PublicSale setting owner
+        it('#5-4. setAllsetting caller owner', async () => {
+            await saleContract.connect(saleOwner).setAllsetting(
+                [100, 200, 1000, 4000, 600, 1200, 2200, 6000],
+                [round1SaleAmount, round2SaleAmount, saleTokenPrice, payTokenPrice, hardcapAmount, changeTOS],
+                [setSnapshot, whitelistStartTime, whitelistEndTime, exclusiveStartTime, exclusiveEndTime, depositStartTime, depositEndTime, claimCounts],
+                [claimTime1,claimTime2,claimTime3,claimTime4,claimTime5],
+                [claimPercent1,claimPercent2,claimPercent3,claimPercent4,claimPercent5]
+            )
 
-    //         let tx = await saleContract.connect(saleOwner).saleTokenPrice()
-    //         let tx2 = await saleContract.connect(saleOwner).payTokenPrice()
-    //         // console.log("tx : ", tx)
-    //         expect(tx).to.be.equal(saleTokenPrice)
-    //         // console.log("tx : ", tx2)
-    //         expect(tx2).to.be.equal(payTokenPrice)
+            let tx = await saleContract.connect(saleOwner).saleTokenPrice()
+            let tx2 = await saleContract.connect(saleOwner).payTokenPrice()
+            // console.log("tx : ", tx)
+            expect(tx).to.be.equal(saleTokenPrice)
+            // console.log("tx : ", tx2)
+            expect(tx2).to.be.equal(payTokenPrice)
 
-    //         let tx3 = Number(await saleContract.connect(saleOwner).totalExpectSaleAmount())
-    //         // console.log("tx3 : ", tx3)
-    //         expect(tx3).to.be.equal(Number(round1SaleAmount))
-    //         let tx4 = Number(await saleContract.connect(saleOwner).totalExpectOpenSaleAmount())
-    //         // console.log("tx4 : ", tx4)
-    //         expect(tx4).to.be.equal(Number(round2SaleAmount))
+            let tx3 = Number(await saleContract.connect(saleOwner).totalExpectSaleAmount())
+            // console.log("tx3 : ", tx3)
+            expect(tx3).to.be.equal(Number(round1SaleAmount))
+            let tx4 = Number(await saleContract.connect(saleOwner).totalExpectOpenSaleAmount())
+            // console.log("tx4 : ", tx4)
+            expect(tx4).to.be.equal(Number(round2SaleAmount))
             
-    //         let tx5 = Number(await saleContract.connect(saleOwner).tiers(1))
-    //         expect(tx5).to.be.equal(100)
-    //         let tx6 = Number(await saleContract.connect(saleOwner).tiers(2))
-    //         expect(tx6).to.be.equal(200)
-    //         let tx7 = Number(await saleContract.connect(saleOwner).tiers(3))
-    //         expect(tx7).to.be.equal(1000)
-    //         let tx8 = Number(await saleContract.connect(saleOwner).tiers(4))
-    //         expect(tx8).to.be.equal(4000)
-    //         let tx9 = Number(await saleContract.connect(saleOwner).tiersPercents(1))
-    //         expect(tx9).to.be.equal(600)
-    //         let tx10 = Number(await saleContract.connect(saleOwner).tiersPercents(2))
-    //         expect(tx10).to.be.equal(1200)
-    //         let tx11 = Number(await saleContract.connect(saleOwner).tiersPercents(3))
-    //         expect(tx11).to.be.equal(2200)
-    //         let tx12 = Number(await saleContract.connect(saleOwner).tiersPercents(4))
-    //         expect(tx12).to.be.equal(6000) 
+            let tx5 = Number(await saleContract.connect(saleOwner).tiers(1))
+            expect(tx5).to.be.equal(100)
+            let tx6 = Number(await saleContract.connect(saleOwner).tiers(2))
+            expect(tx6).to.be.equal(200)
+            let tx7 = Number(await saleContract.connect(saleOwner).tiers(3))
+            expect(tx7).to.be.equal(1000)
+            let tx8 = Number(await saleContract.connect(saleOwner).tiers(4))
+            expect(tx8).to.be.equal(4000)
+            let tx9 = Number(await saleContract.connect(saleOwner).tiersPercents(1))
+            expect(tx9).to.be.equal(600)
+            let tx10 = Number(await saleContract.connect(saleOwner).tiersPercents(2))
+            expect(tx10).to.be.equal(1200)
+            let tx11 = Number(await saleContract.connect(saleOwner).tiersPercents(3))
+            expect(tx11).to.be.equal(2200)
+            let tx12 = Number(await saleContract.connect(saleOwner).tiersPercents(4))
+            expect(tx12).to.be.equal(6000) 
             
-    //         let tier1snap = Number(await lockTOS.balanceOfAt(tester1.account.address, setSnapshot))
-    //         expect(tier1snap).to.be.above(100)
-    //         let tier2snap = Number(await lockTOS.balanceOfAt(tester2.account.address, setSnapshot))
-    //         expect(tier2snap).to.be.above(200)
-    //         let tier3snap = Number(await lockTOS.balanceOfAt(tester3.account.address, setSnapshot))
-    //         expect(tier3snap).to.be.above(1000)
-    //         let tier4snap = Number(await lockTOS.balanceOfAt(tester4.account.address, setSnapshot))
-    //         expect(tier4snap).to.be.above(4000) 
-    //         let tier5snap = Number(await lockTOS.balanceOfAt(tester6.account.address, setSnapshot))
-    //         expect(tier5snap).to.be.above(4000) 
+            let tier1snap = Number(await lockTOS.balanceOfAt(tester1.account.address, setSnapshot))
+            expect(tier1snap).to.be.above(100)
+            let tier2snap = Number(await lockTOS.balanceOfAt(tester2.account.address, setSnapshot))
+            expect(tier2snap).to.be.above(200)
+            let tier3snap = Number(await lockTOS.balanceOfAt(tester3.account.address, setSnapshot))
+            expect(tier3snap).to.be.above(1000)
+            let tier4snap = Number(await lockTOS.balanceOfAt(tester4.account.address, setSnapshot))
+            expect(tier4snap).to.be.above(4000) 
+            let tier5snap = Number(await lockTOS.balanceOfAt(tester6.account.address, setSnapshot))
+            expect(tier5snap).to.be.above(4000) 
 
-    //         let tx13 = Number(await saleContract.startExclusiveTime())
-    //         expect(tx13).to.be.equal(exclusiveStartTime)
-    //         let tx14 = Number(await saleContract.endExclusiveTime())
-    //         expect(tx14).to.be.equal(exclusiveEndTime)
-    //         let tx15 = Number(await saleContract.startAddWhiteTime())
-    //         expect(tx15).to.be.equal(whitelistStartTime)
-    //         let tx16 = Number(await saleContract.endAddWhiteTime())
-    //         expect(tx16).to.be.equal(whitelistEndTime)
+            let tx13 = Number(await saleContract.startExclusiveTime())
+            expect(tx13).to.be.equal(exclusiveStartTime)
+            let tx14 = Number(await saleContract.endExclusiveTime())
+            expect(tx14).to.be.equal(exclusiveEndTime)
+            let tx15 = Number(await saleContract.startAddWhiteTime())
+            expect(tx15).to.be.equal(whitelistStartTime)
+            let tx16 = Number(await saleContract.endAddWhiteTime())
+            expect(tx16).to.be.equal(whitelistEndTime)
 
-    //         let tx17 = Number(await saleContract.claimTimes(0))
-    //         expect(tx17).to.be.equal(claimTime1)
-    //         let tx18 = Number(await saleContract.totalClaimCounts())
-    //         expect(tx18).to.be.equal(claimCounts)
-    //     })
+            let tx17 = Number(await saleContract.claimTimes(0))
+            expect(tx17).to.be.equal(claimTime1)
+            let tx18 = Number(await saleContract.totalClaimCounts())
+            expect(tx18).to.be.equal(claimCounts)
+        })
 
-    //     it("#5-5. changeTONOwner to VestingFund", async () => {
-    //         await saleContract.connect(upgradeAdmin).changeTONOwner(fundVaultAddress)
-    //         let tx = await saleContract.getTokenOwner()
-    //         expect(tx).to.be.equal(fundVaultAddress);
-    //     })
+        it("#5-5. changeTONOwner to VestingFund", async () => {
+            await saleContract.connect(upgradeAdmin).changeTONOwner(fundVaultAddress)
+            let tx = await saleContract.getTokenOwner()
+            expect(tx).to.be.equal(fundVaultAddress);
+        })
 
-    //     it("#5-6. check the changeTick", async () => {
-    //         let changeTick = await saleContract.connect(saleOwner).changeTick();
-    //         console.log("changeTick : ", changeTick);
-    //     })
-    // })
+        it("#5-6. check the changeTick", async () => {
+            let changeTick = await saleContract.connect(saleOwner).changeTick();
+            console.log("changeTick : ", changeTick);
+        })
+    })
 
-    // describe("#6. PublicSale", () => {
-    //     describe("#6-1. round1 Sale", () => {
-    //         it("#6-1-1. calculTierAmount test before addwhiteList", async () => {
-    //             let big60000 = ethers.utils.parseUnits("60000", 18);
-    //             let big120000 = ethers.utils.parseUnits("120000", 18);
-    //             let big220000 = ethers.utils.parseUnits("220000", 18);
-    //             let big600000 = ethers.utils.parseUnits("600000", 18);
-    //             let tx = Number(await saleContract.calculTierAmount(account1.address))
-    //             expect(tx).to.be.equal(Number(big60000))
-    //             let tx2 = Number(await saleContract.calculTierAmount(account2.address))
-    //             expect(tx2).to.be.equal(Number(big120000))
-    //             let tx3 = Number(await saleContract.calculTierAmount(account3.address))
-    //             expect(tx3).to.be.equal(Number(big220000))
-    //             let tx4 = Number(await saleContract.calculTierAmount(account4.address))
-    //             expect(tx4).to.be.equal(Number(big600000))
-    //             let tx5 = Number(await saleContract.calculTierAmount(account6.address))
-    //             expect(tx5).to.be.equal(Number(big600000))
-    //         })
+    describe("#6. PublicSale", () => {
+        describe("#6-1. round1 Sale", () => {
+            it("#6-1-1. calculTierAmount test before addwhiteList", async () => {
+                let big60000 = ethers.utils.parseUnits("60000", 18);
+                let big120000 = ethers.utils.parseUnits("120000", 18);
+                let big220000 = ethers.utils.parseUnits("220000", 18);
+                let big600000 = ethers.utils.parseUnits("600000", 18);
+                let tx = Number(await saleContract.calculTierAmount(account1.address))
+                expect(tx).to.be.equal(Number(big60000))
+                let tx2 = Number(await saleContract.calculTierAmount(account2.address))
+                expect(tx2).to.be.equal(Number(big120000))
+                let tx3 = Number(await saleContract.calculTierAmount(account3.address))
+                expect(tx3).to.be.equal(Number(big220000))
+                let tx4 = Number(await saleContract.calculTierAmount(account4.address))
+                expect(tx4).to.be.equal(Number(big600000))
+                let tx5 = Number(await saleContract.calculTierAmount(account6.address))
+                expect(tx5).to.be.equal(Number(big600000))
+            })
 
-    //         it("duration the time", async () => {
-    //             await ethers.provider.send('evm_setNextBlockTimestamp', [whitelistStartTime]);
-    //             await ethers.provider.send('evm_mine');
-    //         })
+            it("duration the time", async () => {
+                await ethers.provider.send('evm_setNextBlockTimestamp', [whitelistStartTime]);
+                await ethers.provider.send('evm_mine');
+            })
 
-    //         it("#6-1-2. addWhiteList", async () => {
-    //             let tx = Number(await saleContract.connect(tester1.account).tiersAccount(1))
-    //             expect(tx).to.be.equal(0)
-    //             await saleContract.connect(tester1.account).addWhiteList()
-    //             let tx2 = Number(await saleContract.connect(tester1.account).tiersAccount(1))
-    //             expect(tx2).to.be.equal(1)
+            it("#6-1-2. addWhiteList", async () => {
+                console.log("1")
+                let tx = Number(await saleContract.connect(tester1.account).tiersAccount(1))
+                expect(tx).to.be.equal(0)
+                await saleContract.connect(tester1.account).addWhiteList()
+                console.log("2")
+                let tx2 = Number(await saleContract.connect(tester1.account).tiersAccount(1))
+                expect(tx2).to.be.equal(1)
 
-    //             let tx3 = Number(await saleContract.connect(tester2.account).tiersAccount(2))
-    //             expect(tx3).to.be.equal(0)
-    //             await saleContract.connect(tester2.account).addWhiteList()
-    //             let tx4 = Number(await saleContract.connect(tester2.account).tiersAccount(2))
-    //             expect(tx4).to.be.equal(1)
+                let tx3 = Number(await saleContract.connect(tester2.account).tiersAccount(2))
+                expect(tx3).to.be.equal(0)
+                await saleContract.connect(tester2.account).addWhiteList()
+                let tx4 = Number(await saleContract.connect(tester2.account).tiersAccount(2))
+                expect(tx4).to.be.equal(1)
 
-    //             let tx5 = Number(await saleContract.connect(tester3.account).tiersAccount(3))
-    //             expect(tx5).to.be.equal(0)
-    //             await saleContract.connect(tester3.account).addWhiteList()
-    //             let tx6 = Number(await saleContract.connect(tester3.account).tiersAccount(3))
-    //             expect(tx6).to.be.equal(1)
+                let tx5 = Number(await saleContract.connect(tester3.account).tiersAccount(3))
+                expect(tx5).to.be.equal(0)
+                await saleContract.connect(tester3.account).addWhiteList()
+                let tx6 = Number(await saleContract.connect(tester3.account).tiersAccount(3))
+                expect(tx6).to.be.equal(1)
 
-    //             let tx7 = Number(await saleContract.connect(tester4.account).tiersAccount(4))
-    //             expect(tx7).to.be.equal(0)
-    //             await saleContract.connect(tester4.account).addWhiteList()
-    //             let tx8 = Number(await saleContract.connect(tester4.account).tiersAccount(4))
-    //             expect(tx8).to.be.equal(1)
+                let tx7 = Number(await saleContract.connect(tester4.account).tiersAccount(4))
+                expect(tx7).to.be.equal(0)
+                await saleContract.connect(tester4.account).addWhiteList()
+                let tx8 = Number(await saleContract.connect(tester4.account).tiersAccount(4))
+                expect(tx8).to.be.equal(1)
 
-    //             let tx9 = saleContract.connect(tester4.account).addWhiteList()
-    //             await expect(tx9).to.be.revertedWith("PublicSale: already attended")
+                console.log("3")
+                let tx9 = saleContract.connect(tester4.account).addWhiteList()
+                await expect(tx9).to.be.revertedWith("PublicSale: already attended")
+                console.log("4")
+                let big300000 = ethers.utils.parseUnits("300000", 18);
+                let big600000 = ethers.utils.parseUnits("600000", 18);
+                let tx10 = Number(await saleContract.calculTierAmount(account6.address))
+                expect(tx10).to.be.equal(Number(big300000))
+
+                let tx11 = Number(await saleContract.calculTierAmount(account4.address))
+                expect(tx11).to.be.equal(Number(big600000))
+                console.log("5")
+                let tx12 = Number(await saleContract.connect(tester6.account).tiersAccount(4))
+                expect(tx12).to.be.equal(1)
+
+                console.log("6")
+                await saleContract.connect(tester6.account).addWhiteList()
+                let tx13 = Number(await saleContract.connect(tester6.account).tiersAccount(4))
+                expect(tx13).to.be.equal(2)
+
+                console.log("7")
+                let tx14 = Number(await saleContract.calculTierAmount(account6.address))
+                expect(tx14).to.be.equal(Number(big300000))
+
+                let tx15 = Number(await saleContract.calculTierAmount(account4.address))
+                expect(tx15).to.be.equal(Number(big300000))
                 
-    //             let big300000 = ethers.utils.parseUnits("300000", 18);
-    //             let big600000 = ethers.utils.parseUnits("600000", 18);
-    //             let tx10 = Number(await saleContract.calculTierAmount(account6.address))
-    //             expect(tx10).to.be.equal(Number(big300000))
+                console.log("8")
+                let tx16 = Number(await saleContract.totalWhitelists())
+                expect(tx16).to.be.equal(5)
+            })
 
-    //             let tx11 = Number(await saleContract.calculTierAmount(account4.address))
-    //             expect(tx11).to.be.equal(Number(big600000))
+            it("#6-1-3. calculation the inputAmount", async () => {
+                let tx = Number(await saleContract.calculPayToken(60000))
+                expect(tx).to.be.equal(60)
+                let tx2 = Number(await saleContract.calculPayToken(120000))
+                expect(tx2).to.be.equal(120)
+                let tx3 = Number(await saleContract.calculPayToken(220000))
+                expect(tx3).to.be.equal(220)
+                let tx4 = Number(await saleContract.calculPayToken(300000))
+                expect(tx4).to.be.equal(300)
+                let tx5 = Number(await saleContract.calculPayToken(300000))
+                expect(tx5).to.be.equal(300)
+            })
 
-    //             let tx12 = Number(await saleContract.connect(tester6.account).tiersAccount(4))
-    //             expect(tx12).to.be.equal(1)
-    //             await saleContract.connect(tester6.account).addWhiteList()
-    //             let tx13 = Number(await saleContract.connect(tester6.account).tiersAccount(4))
-    //             expect(tx13).to.be.equal(2)
+            it("#6-1-4. calculTierAmount test after addwhiteList", async () => {
+                let big60000 = ethers.utils.parseUnits("60000", 18);
+                let big120000 = ethers.utils.parseUnits("120000", 18);
+                let big220000 = ethers.utils.parseUnits("220000", 18);
+                let big300000 = ethers.utils.parseUnits("300000", 18);
+                let tx = Number(await saleContract.calculTierAmount(account1.address))
+                expect(tx).to.be.equal(Number(big60000))
+                let tx2 = Number(await saleContract.calculTierAmount(account2.address))
+                expect(tx2).to.be.equal(Number(big120000))
+                let tx3 = Number(await saleContract.calculTierAmount(account3.address))
+                expect(tx3).to.be.equal(Number(big220000))
+                let tx4 = Number(await saleContract.calculTierAmount(account4.address))
+                expect(tx4).to.be.equal(Number(big300000))
+                let tx5 = Number(await saleContract.calculTierAmount(account6.address))
+                expect(tx5).to.be.equal(Number(big300000))
+            })
 
-    //             let tx14 = Number(await saleContract.calculTierAmount(account6.address))
-    //             expect(tx14).to.be.equal(Number(big300000))
+            it("#6-1-5. exclusiveSale before exclusive startTime", async () => {
+                await getToken.connect(account1).approve(saleContract.address, 60)
+                let tx = saleContract.connect(account1).exclusiveSale(account1.address,60)
+                await expect(tx).to.be.revertedWith("PublicSale: exclusiveStartTime has not passed")
+            })
 
-    //             let tx15 = Number(await saleContract.calculTierAmount(account4.address))
-    //             expect(tx15).to.be.equal(Number(big300000))
+            it("duration the time", async () => {
+                await ethers.provider.send('evm_setNextBlockTimestamp', [exclusiveStartTime]);
+                await ethers.provider.send('evm_mine');
 
-    //             let tx16 = Number(await saleContract.totalWhitelists())
-    //             expect(tx16).to.be.equal(5)
-    //         })
+                await time.increaseTo(exclusiveStartTime+86400);
+            })
 
-    //         it("#6-1-3. calculation the inputAmount", async () => {
-    //             let tx = Number(await saleContract.calculPayToken(60000))
-    //             expect(tx).to.be.equal(60)
-    //             let tx2 = Number(await saleContract.calculPayToken(120000))
-    //             expect(tx2).to.be.equal(120)
-    //             let tx3 = Number(await saleContract.calculPayToken(220000))
-    //             expect(tx3).to.be.equal(220)
-    //             let tx4 = Number(await saleContract.calculPayToken(300000))
-    //             expect(tx4).to.be.equal(300)
-    //             let tx5 = Number(await saleContract.calculPayToken(300000))
-    //             expect(tx5).to.be.equal(300)
-    //         })
+            it("#6-1-6. addwhitelist after whitelistTIme", async () => {
+                let tx = saleContract.connect(account1).addWhiteList()
+                await expect(tx).to.be.revertedWith("PublicSale: end the whitelistTime")
+            })
 
-    //         it("#6-1-4. calculTierAmount test after addwhiteList", async () => {
-    //             let big60000 = ethers.utils.parseUnits("60000", 18);
-    //             let big120000 = ethers.utils.parseUnits("120000", 18);
-    //             let big220000 = ethers.utils.parseUnits("220000", 18);
-    //             let big300000 = ethers.utils.parseUnits("300000", 18);
-    //             let tx = Number(await saleContract.calculTierAmount(account1.address))
-    //             expect(tx).to.be.equal(Number(big60000))
-    //             let tx2 = Number(await saleContract.calculTierAmount(account2.address))
-    //             expect(tx2).to.be.equal(Number(big120000))
-    //             let tx3 = Number(await saleContract.calculTierAmount(account3.address))
-    //             expect(tx3).to.be.equal(Number(big220000))
-    //             let tx4 = Number(await saleContract.calculTierAmount(account4.address))
-    //             expect(tx4).to.be.equal(Number(big300000))
-    //             let tx5 = Number(await saleContract.calculTierAmount(account6.address))
-    //             expect(tx5).to.be.equal(Number(big300000))
-    //         })
+            it("#6-1-7. exclusiveSale after exclusive startTime", async () => {
+                let big60 = ethers.utils.parseUnits("60", 18);
+                let big120 = ethers.utils.parseUnits("120", 18);
+                let big220 = ethers.utils.parseUnits("220", 18);
+                let big300 = ethers.utils.parseUnits("300", 18);
 
-    //         it("#6-1-5. exclusiveSale before exclusive startTime", async () => {
-    //             await getToken.connect(account1).approve(saleContract.address, 60)
-    //             let tx = saleContract.connect(account1).exclusiveSale(account1.address,60)
-    //             await expect(tx).to.be.revertedWith("PublicSale: exclusiveStartTime has not passed")
-    //         })
+                // await wton.connect(account1).approveAndCall(saleContract.address, account1BigWTONAmount, 0);
+                await wton.connect(account1).approve(saleContract.address, account1BigWTONAmount)
+                await saleContract.connect(account1).exclusiveSale(account1.address,big60)
+                let tx = await saleContract.usersEx(account1.address)
+                expect(Number(tx.payAmount)).to.be.equal(Number(big60))
 
-    //         it("duration the time", async () => {
-    //             await ethers.provider.send('evm_setNextBlockTimestamp', [exclusiveStartTime]);
-    //             await ethers.provider.send('evm_mine');
+                // await getToken.connect(account2).approveAndCall(saleContract.address, big120, 0);
+                await getToken.connect(account2).approve(saleContract.address, big120)
+                await saleContract.connect(account2).exclusiveSale(account2.address,big120)
+                let tx2 = await saleContract.usersEx(account2.address)
+                expect(Number(tx2.payAmount)).to.be.equal(Number(big120))
 
-    //             await time.increaseTo(exclusiveStartTime+86400);
-    //         })
+                // await getToken.connect(account3).approveAndCall(saleContract.address, big220, 0);
+                await getToken.connect(account3).approve(saleContract.address, big220)
+                await saleContract.connect(account3).exclusiveSale(account3.address,big220)
+                let tx3 = await saleContract.usersEx(account3.address)
+                expect(Number(tx3.payAmount)).to.be.equal(Number(big220))
 
-    //         it("#6-1-6. addwhitelist after whitelistTIme", async () => {
-    //             let tx = saleContract.connect(account1).addWhiteList()
-    //             await expect(tx).to.be.revertedWith("PublicSale: end the whitelistTime")
-    //         })
+                // await getToken.connect(account4).approveAndCall(saleContract.address, big300, 0);
+                await getToken.connect(account4).approve(saleContract.address, big300)
+                await saleContract.connect(account4).exclusiveSale(account4.address,big300)
+                let tx4 = await saleContract.usersEx(account4.address)
+                expect(Number(tx4.payAmount)).to.be.equal(Number(big300))
 
-    //         it("#6-1-7. exclusiveSale after exclusive startTime", async () => {
-    //             let big60 = ethers.utils.parseUnits("60", 18);
-    //             let big120 = ethers.utils.parseUnits("120", 18);
-    //             let big220 = ethers.utils.parseUnits("220", 18);
-    //             let big300 = ethers.utils.parseUnits("300", 18);
+                // await getToken.connect(account6).approveAndCall(saleContract.address, account6BigTONAmount, 0);
+                await getToken.connect(account6).approve(saleContract.address, big300)
+                await saleContract.connect(account6).exclusiveSale(account6.address,big300)
+                let tx5 = await saleContract.usersEx(account6.address)
+                expect(Number(tx5.payAmount)).to.be.equal(Number(account6BigTONAmount))
 
-    //             await wton.connect(account1).approveAndCall(saleContract.address, account1BigWTONAmount, 0);
-    //             let tx = await saleContract.usersEx(account1.address)
-    //             expect(Number(tx.payAmount)).to.be.equal(Number(big60))
+                let big1000 = ethers.utils.parseUnits("1000", 18);
+                let big1000000 = ethers.utils.parseUnits("1000000", 18);
+                let tx6 = Number(await saleContract.totalExPurchasedAmount())
+                expect(tx6).to.be.equal(Number(big1000))
+                let tx7 = Number(await saleContract.totalExSaleAmount())
+                expect(tx7).to.be.equal(Number(big1000000))
+            })
+        })
 
-    //             await getToken.connect(account2).approveAndCall(saleContract.address, big120, 0);
-    //             let tx2 = await saleContract.usersEx(account2.address)
-    //             expect(Number(tx2.payAmount)).to.be.equal(Number(big120))
+        describe("#6-2. round2 Sale", () => {
+            it("#6-2-1. deposit before depositTime", async () => {
+                let tx = saleContract.connect(account1).deposit(account1.address,100)
+                await expect(tx).to.be.revertedWith("PublicSale: don't start depositTime")
+            })
 
-    //             await getToken.connect(account3).approveAndCall(saleContract.address, big220, 0);
-    //             let tx3 = await saleContract.usersEx(account3.address)
-    //             expect(Number(tx3.payAmount)).to.be.equal(Number(big220))
+            it("duration the time", async () => {
+                await ethers.provider.send('evm_setNextBlockTimestamp', [depositStartTime]);
+                await ethers.provider.send('evm_mine');
+            })
 
-    //             await getToken.connect(account4).approveAndCall(saleContract.address, big300, 0);
-    //             let tx4 = await saleContract.usersEx(account4.address)
-    //             expect(Number(tx4.payAmount)).to.be.equal(Number(big300))
+            it("#6-2-2. deposit after depositTime", async () => {
+                account1Before = Number(await getToken.balanceOf(account1.address))
+                account2Before = Number(await getToken.balanceOf(account2.address))
+                account3Before = Number(await getToken.balanceOf(account3.address))
+                account4Before = Number(await getToken.balanceOf(account4.address))
 
-    //             await getToken.connect(account6).approveAndCall(saleContract.address, account6BigTONAmount, 0);
-    //             let tx5 = await saleContract.usersEx(account6.address)
-    //             expect(Number(tx5.payAmount)).to.be.equal(Number(account6BigTONAmount))
+                let big50 = ethers.utils.parseUnits("50", 18);
+                let big100 = ethers.utils.parseUnits("100", 18);
+                let big150 = ethers.utils.parseUnits("150", 18);
+                let big200 = ethers.utils.parseUnits("200", 18);
 
-    //             let big1000 = ethers.utils.parseUnits("1000", 18);
-    //             let big1000000 = ethers.utils.parseUnits("1000000", 18);
-    //             let tx6 = Number(await saleContract.totalExPurchasedAmount())
-    //             expect(tx6).to.be.equal(Number(big1000))
-    //             let tx7 = Number(await saleContract.totalExSaleAmount())
-    //             expect(tx7).to.be.equal(Number(big1000000))
-    //         })
-    //     })
+                // await wton.connect(account3).approve(saleContract.address, account3BigWTONAmount)         
 
-    //     describe("#6-2. round2 Sale", () => {
-    //         it("#6-2-1. deposit before depositTime", async () => {
-    //             let tx = saleContract.connect(account1).deposit(account1.address,100)
-    //             await expect(tx).to.be.revertedWith("PublicSale: don't start depositTime")
-    //         })
+                // await getToken.connect(account1).approveAndCall(saleContract.address, big50, 0);
+                await getToken.connect(account1).approve(saleContract.address, big50);
+                await saleContract.connect(account1).deposit(big50)
 
-    //         it("duration the time", async () => {
-    //             await ethers.provider.send('evm_setNextBlockTimestamp', [depositStartTime]);
-    //             await ethers.provider.send('evm_mine');
-    //         })
+                // await wton.connect(account2).approveAndCall(saleContract.address, account2BigWTONAmount, 0);
+                await wton.connect(account2).approve(saleContract.address, account2BigWTONAmount);
+                await saleContract.connect(account2).deposit(big100)
 
-    //         it("#6-2-2. deposit after depositTime", async () => {
-    //             account1Before = Number(await getToken.balanceOf(account1.address))
-    //             account2Before = Number(await getToken.balanceOf(account2.address))
-    //             account3Before = Number(await getToken.balanceOf(account3.address))
-    //             account4Before = Number(await getToken.balanceOf(account4.address))
+                // var dec = 300000000000000000000;
+                // var hex = dec.toString(16);
+                // // console.log("hex : ", hex, " hex.length : ", hex.length);
+                // let length = hex.length;
+                // for(let i = 1; i<=(64-length); i++) {
+                //     hex = "0"+hex;
+                //     if (i==(64-length)) {
+                //         hex = "0x" + hex;
+                //     }
+                // }
 
-    //             let big50 = ethers.utils.parseUnits("50", 18);
-    //             let big100 = ethers.utils.parseUnits("100", 18);
-    //             let big150 = ethers.utils.parseUnits("150", 18);
-    //             let big200 = ethers.utils.parseUnits("200", 18);
+                // await getToken.connect(account3).approveAndCall(saleContract.address, big150, 0);
+                await getToken.connect(account3).approve(saleContract.address, big150);
+                await saleContract.connect(account3).deposit(big150)
 
-    //             await wton.connect(account3).approve(saleContract.address, account3BigWTONAmount)         
-    //             await getToken.connect(account1).approveAndCall(saleContract.address, big50, 0);
-    //             await wton.connect(account2).approveAndCall(saleContract.address, account2BigWTONAmount, 0);
+                // await getToken.connect(account4).approveAndCall(saleContract.address, big200, 0);
+                await getToken.connect(account4).approve(saleContract.address, big200);
+                await saleContract.connect(account4).deposit(big200)
 
-    //             var dec = 300000000000000000000;
-    //             var hex = dec.toString(16);
-    //             // console.log("hex : ", hex, " hex.length : ", hex.length);
-    //             let length = hex.length;
-    //             for(let i = 1; i<=(64-length); i++) {
-    //                 hex = "0"+hex;
-    //                 if (i==(64-length)) {
-    //                     hex = "0x" + hex;
-    //                 }
-    //             }
-
-    //             await getToken.connect(account3).approveAndCall(saleContract.address, big150, 0);
-    //             await getToken.connect(account4).approveAndCall(saleContract.address, big200, 0);
-
-    //             let tx = await saleContract.usersOpen(account1.address)
-    //             expect(Number(tx.depositAmount)).to.be.equal(Number(big50))
-    //             let tx2 = await saleContract.usersOpen(account2.address)
-    //             expect(Number(tx2.depositAmount)).to.be.equal(Number(big100))
-    //             let tx3 = await saleContract.usersOpen(account3.address)
-    //             expect(Number(tx3.depositAmount)).to.be.equal(Number(big150))
-    //             let tx4 = await saleContract.usersOpen(account4.address)
-    //             expect(Number(tx4.depositAmount)).to.be.equal(Number(big200))
-    //         })
-    //     })
-    // })
+                let tx = await saleContract.usersOpen(account1.address)
+                expect(Number(tx.depositAmount)).to.be.equal(Number(big50))
+                let tx2 = await saleContract.usersOpen(account2.address)
+                expect(Number(tx2.depositAmount)).to.be.equal(Number(big100))
+                let tx3 = await saleContract.usersOpen(account3.address)
+                expect(Number(tx3.depositAmount)).to.be.equal(Number(big150))
+                let tx4 = await saleContract.usersOpen(account4.address)
+                expect(Number(tx4.depositAmount)).to.be.equal(Number(big200))
+            })
+        })
+    })
 
     // describe("#7. claim", () => {
     //     it("#7-1. claim before claimTime", async () => {

@@ -20,10 +20,6 @@ interface IPublicSale {
         uint256[] calldata _claimTimes,
         uint256[] calldata _claimPercents
     ) external;
-    
-    /// @dev set snapshot
-    /// @param _snapshot _snapshot timestamp
-    function setSnapshot(uint256 _snapshot) external;
 
     /// @dev set information related to exclusive sale
     /// @param _startAddWhiteTime start time of addwhitelist
@@ -38,9 +34,11 @@ interface IPublicSale {
     ) external;
 
     /// @dev set information related to open sale
+    /// @param _snapshot _snapshot timestamp
     /// @param _startDepositTime start time of deposit
     /// @param _endDepositTime end time of deposit
     function setOpenTime(
+        uint256 _snapshot,
         uint256 _startDepositTime,
         uint256 _endDepositTime
     ) external;
@@ -88,31 +86,17 @@ interface IPublicSale {
     ) external;
 
     /// @dev set information related to saleAmount and tokenPrice
-    /// @param _expectAmount[2] saleAmount setting
-    /// @param _priceAmount[2] tokenPrice setting
-    function setAllAmount(
-        uint256[2] calldata _expectAmount,
-        uint256[2] calldata _priceAmount
-    ) external;
-
-    /// @dev set information related to sale amount
     /// @param _totalExpectSaleAmount expected amount of exclusive sale
     /// @param _totalExpectOpenSaleAmount expected amount of open sale
-    function setSaleAmount(
-        uint256 _totalExpectSaleAmount,
-        uint256 _totalExpectOpenSaleAmount
-    ) external;
-
-    /// @dev set information related to token price
     /// @param _saleTokenPrice the sale token price
     /// @param _payTokenPrice  the funding(pay) token price
-    function setTokenPrice(uint256 _saleTokenPrice, uint256 _payTokenPrice)
-        external;
-
-    /// @dev set information related to token price
     /// @param _hardcapAmount the sale token price
     /// @param _changePercent  the funding(pay) token price
-    function setHardcap (
+    function setAllAmount(
+        uint256 _totalExpectSaleAmount,
+        uint256 _totalExpectOpenSaleAmount,
+        uint256 _saleTokenPrice,
+        uint256 _payTokenPrice,
         uint256 _hardcapAmount,
         uint256 _changePercent
     ) external;
@@ -185,6 +169,12 @@ interface IPublicSale {
         view 
         returns (uint256);
 
+    /// @dev view totalWhitelists
+    function totalWhitelists() 
+        external 
+        view 
+        returns (uint256);
+
     /// @dev execute add whitelist
     function addWhiteList() external;
 
@@ -201,8 +191,15 @@ interface IPublicSale {
     /// @dev execute the claim
     function claim() external;
 
-    /// @dev execute the claim
+    /// @dev execute the depositWithdraw
     function depositWithdraw() external;
+
+    /// @dev execute the exchangeWTONtoTOS
+    function exchangeWTONtoTOS(
+        uint256 amountIn,
+        address poolAddress
+    ) 
+        external;
 
     function _decodeApproveData(
         bytes memory data
