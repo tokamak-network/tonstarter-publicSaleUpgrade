@@ -6,10 +6,11 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../interfaces/IPublicSale.sol";
 import "../common/ProxyAccessCommon.sol";
-// import "../proxy/BaseProxyStorage.sol";
 import "./PublicSaleStorage.sol";
 
 import "../libraries/LibPublicSale.sol";
+
+import "hardhat/console.sol";
 
 interface IIERC20Burnable {
     function burn(uint256 amount) external ;
@@ -820,12 +821,15 @@ contract PublicSale is
     {
         require(amountIn > 0, "zero input amount");
         require(block.timestamp > endDepositTime,"PublicSale: need to end the depositTime");
+        console.log("1");
 
         uint256 liquidityTON = hardcapCalcul();
         require(liquidityTON > 0, "PublicSale: don't pass the hardCap");
 
         (uint160 sqrtPriceX96, int24 tick,,,,,) =  IIUniswapV3Pool(poolAddress).slot0();
         require(sqrtPriceX96 > 0, "pool is not initialized");
+
+        console.log("2");
 
         int24 timeWeightedAverageTick = OracleLibrary.consult(poolAddress, 120);
         require(
@@ -834,10 +838,12 @@ contract PublicSale is
             "It's not allowed changed tick range."
         );
 
+        console.log("3");
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
         
         uint256 wtonAmount = IERC20(wton).balanceOf(address(this));
+        console.log("4");
         if(wtonAmount == 0 && exchangeTOS != true) {
             IIWTON(wton).swapFromTON(liquidityTON);
             exchangeTOS = true;
@@ -845,6 +851,7 @@ contract PublicSale is
             require(wtonAmount >= amountIn, "PublicSale : amountIn is too large");
         }
 
+        console.log("5");
         ISwapRouter.ExactInputSingleParams memory params =
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: wton,
@@ -857,7 +864,7 @@ contract PublicSale is
                 sqrtPriceLimitX96: sqrtPriceLimitX96
             });
         uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
-
+        console.log("6");
         emit Withdrawal(msg.sender, amountOut);
     }
     

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.16;
 
-import '../libraries/FullMath.sol';
-import '../libraries/TickMath.sol';
+import "../libraries/FullMath.sol";
+import "../libraries/TickMath.sol";
+
 
 interface IIIUniswapV3Pool {
+
     function observe(uint32[] calldata secondsAgos)
         external
         view
@@ -20,7 +22,7 @@ library OracleLibrary {
     /// @param period Number of seconds in the past to start calculating time-weighted average
     /// @return timeWeightedAverageTick The time-weighted average tick from (block.timestamp - period) to block.timestamp
     function consult(address pool, uint32 period) internal view returns (int24 timeWeightedAverageTick) {
-        require(period != 0, 'BP');
+        require(period != 0, "BP");
 
         uint32[] memory secondAgos = new uint32[](2);
         secondAgos[0] = period;

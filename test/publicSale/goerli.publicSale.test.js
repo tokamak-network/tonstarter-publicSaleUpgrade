@@ -1367,118 +1367,118 @@ describe("Sale", () => {
         })
     })
 
-    // describe("#7. claim", () => {
-    //     it("#7-1. claim before claimTime", async () => {
-    //         let tx = saleContract.connect(account1).claim()
-    //         await expect(tx).to.be.revertedWith("PublicSale: don't start claimTime")
-    //     })
+    describe("#7. claim", () => {
+        it("#7-1. claim before claimTime", async () => {
+            let tx = saleContract.connect(account1).claim()
+            await expect(tx).to.be.revertedWith("PublicSale: don't start claimTime")
+        })
 
 
-    //     it("duration the time to period end", async () => {
-    //         let periodEnd = claimTime5 + (86400*7)
-    //         await ethers.provider.send('evm_setNextBlockTimestamp', [periodEnd]);
-    //         await ethers.provider.send('evm_mine');
-    //     })
+        it("duration the time to period end", async () => {
+            let periodEnd = claimTime5 + (86400*7)
+            await ethers.provider.send('evm_setNextBlockTimestamp', [periodEnd]);
+            await ethers.provider.send('evm_mine');
+        })
 
-    //     it("#7-2. claim period end, claim call all accounts", async () => {
-    //         let expectClaim = await saleContract.calculClaimAmount(account1.address, 0)
-    //         let expectClaim2 = await saleContract.calculClaimAmount(account2.address, 0)
-    //         let expectClaim3 = await saleContract.calculClaimAmount(account3.address, 0)
-    //         let expectClaim4 = await saleContract.calculClaimAmount(account4.address, 0)
-    //         let expectClaim5 = await saleContract.calculClaimAmount(account6.address, 0)
+        it("#7-2. claim period end, claim call all accounts", async () => {
+            let expectClaim = await saleContract.calculClaimAmount(account1.address, 0)
+            let expectClaim2 = await saleContract.calculClaimAmount(account2.address, 0)
+            let expectClaim3 = await saleContract.calculClaimAmount(account3.address, 0)
+            let expectClaim4 = await saleContract.calculClaimAmount(account4.address, 0)
+            let expectClaim5 = await saleContract.calculClaimAmount(account6.address, 0)
 
-    //         await saleContract.connect(account1).claim()
-    //         await saleContract.connect(account2).claim()
-    //         await saleContract.connect(account3).claim()
-    //         await saleContract.connect(account4).claim()
-    //         await saleContract.connect(account6).claim()
+            await saleContract.connect(account1).claim()
+            await saleContract.connect(account2).claim()
+            await saleContract.connect(account3).claim()
+            await saleContract.connect(account4).claim()
+            await saleContract.connect(account6).claim()
 
-    //         let tx1 = await saleToken.balanceOf(account1.address)
-    //         let tx2 = await saleToken.balanceOf(account2.address)
-    //         let tx3 = await saleToken.balanceOf(account3.address)
-    //         let tx4 = await saleToken.balanceOf(account4.address)
-    //         let tx6 = await saleToken.balanceOf(account6.address)
+            let tx1 = await saleToken.balanceOf(account1.address)
+            let tx2 = await saleToken.balanceOf(account2.address)
+            let tx3 = await saleToken.balanceOf(account3.address)
+            let tx4 = await saleToken.balanceOf(account4.address)
+            let tx6 = await saleToken.balanceOf(account6.address)
 
-    //         expect(Number(tx1)).to.be.equal(Number(expectClaim._totalClaim))
-    //         expect(Number(tx2)).to.be.equal(Number(expectClaim2._totalClaim))
-    //         expect(Number(tx3)).to.be.equal(Number(expectClaim3._totalClaim))
-    //         expect(Number(tx4)).to.be.equal(Number(expectClaim4._totalClaim))
-    //         expect(Number(tx6)).to.be.equal(Number(expectClaim5._totalClaim))
-    //     })
+            expect(Number(tx1)).to.be.equal(Number(expectClaim._totalClaim))
+            expect(Number(tx2)).to.be.equal(Number(expectClaim2._totalClaim))
+            expect(Number(tx3)).to.be.equal(Number(expectClaim3._totalClaim))
+            expect(Number(tx4)).to.be.equal(Number(expectClaim4._totalClaim))
+            expect(Number(tx6)).to.be.equal(Number(expectClaim5._totalClaim))
+        })
 
-    //     it("#7-3. no refund check", async () => {
-    //         let tx = await saleContract.usersClaim(account1.address)
-    //         expect(Number(tx.refundAmount)).to.be.equal(0)
-    //         let tx2 = await saleContract.usersClaim(account2.address)
-    //         expect(Number(tx2.refundAmount)).to.be.equal(0)
-    //         let tx3 = await saleContract.usersClaim(account3.address)
-    //         expect(Number(tx3.refundAmount)).to.be.equal(0)
-    //         let tx4 = await saleContract.usersClaim(account4.address)
-    //         expect(Number(tx4.refundAmount)).to.be.equal(0)
-    //     })
+        it("#7-3. no refund check", async () => {
+            let tx = await saleContract.usersClaim(account1.address)
+            expect(Number(tx.refundAmount)).to.be.equal(0)
+            let tx2 = await saleContract.usersClaim(account2.address)
+            expect(Number(tx2.refundAmount)).to.be.equal(0)
+            let tx3 = await saleContract.usersClaim(account3.address)
+            expect(Number(tx3.refundAmount)).to.be.equal(0)
+            let tx4 = await saleContract.usersClaim(account4.address)
+            expect(Number(tx4.refundAmount)).to.be.equal(0)
+        })
 
-    //     it("#7-4. contract have 1500TON", async () => {
-    //         let checkTON = await ton.balanceOf(saleContract.address);
-    //         expect(Number(checkTON)).to.be.eq(Number(contracthaveTON));
-    //     })
+        it("#7-4. contract have 1500TON", async () => {
+            let checkTON = await ton.balanceOf(saleContract.address);
+            expect(Number(checkTON)).to.be.eq(Number(contracthaveTON));
+        })
 
-    //     it("#7-5. depositWithdraw test before exchangeWTONtoTOS", async () => {
-    //         let tx = saleContract.connect(saleOwner).depositWithdraw();
-    //         await expect(tx).to.be.revertedWith("PublicSale : need the exchangeWTONtoTOS")
-    //     })
+        it("#7-5. depositWithdraw test before exchangeWTONtoTOS", async () => {
+            let tx = saleContract.connect(saleOwner).depositWithdraw();
+            await expect(tx).to.be.revertedWith("PublicSale : need the exchangeWTONtoTOS")
+        })
 
-    //     it("#7-6. check getAmount value", async () => {
-    //         let hardcapValue = await saleContract.hardcapCalcul();
-    //         let getAmount = await ton.balanceOf(saleContract.address);
-    //         console.log("hardcapValue :", Number(hardcapValue));
-    //         console.log("getAmount :", Number(getAmount));
-    //         let overflow = Number(getAmount)-Number(hardcapValue);
-    //         console.log("overflow :", Number(overflow));
-    //     })
+        it("#7-6. check getAmount value", async () => {
+            let hardcapValue = await saleContract.hardcapCalcul();
+            let getAmount = await ton.balanceOf(saleContract.address);
+            console.log("hardcapValue :", Number(hardcapValue));
+            console.log("getAmount :", Number(getAmount));
+            let overflow = Number(getAmount)-Number(hardcapValue);
+            console.log("overflow :", Number(overflow));
+        })
         
-    //     it("#7-7. exchangeWTONtoTOS test", async () => {
-    //         let tosValue = await tos.balanceOf(vaultAddress);
-    //         expect(tosValue).to.be.equal(0);
-    //         await saleContract.connect(saleOwner).exchangeWTONtoTOS(contractChangeWTON4,uniswapInfo.wtonTosPool);
-    //     })
+        it("#7-7. exchangeWTONtoTOS test", async () => {
+            let tosValue = await tos.balanceOf(vaultAddress);
+            expect(tosValue).to.be.equal(0);
+            await saleContract.connect(saleOwner).exchangeWTONtoTOS(contractChangeWTON4,uniswapInfo.wtonTosPool);
+        })
 
-    //     it("#7-8. check tos", async () => {
-    //         let tosValue = await tos.balanceOf(vaultAddress);
-    //         expect(tosValue).to.be.above(0);
-    //     })
+        // it("#7-8. check tos", async () => {
+        //     let tosValue = await tos.balanceOf(vaultAddress);
+        //     expect(tosValue).to.be.above(0);
+        // })
         
-    //     it("#7-9. check burnAmount", async () => {
-    //         let round1Expect = await saleContract.totalExpectSaleAmount()
-    //         console.log("round1Expect :", Number(round1Expect));
+        // it("#7-9. check burnAmount", async () => {
+        //     let round1Expect = await saleContract.totalExpectSaleAmount()
+        //     console.log("round1Expect :", Number(round1Expect));
 
-    //         let round2Expect = await saleContract.totalExpectOpenSaleAmount();
-    //         console.log("round2Expect :", Number(round2Expect));
+        //     let round2Expect = await saleContract.totalExpectOpenSaleAmount();
+        //     console.log("round2Expect :", Number(round2Expect));
 
-    //         let round1Real = await saleContract.totalExSaleAmount();
-    //         console.log("round1Real :", Number(round1Real));
+        //     let round1Real = await saleContract.totalExSaleAmount();
+        //     console.log("round1Real :", Number(round1Real));
 
-    //         let round2Real = await saleContract.totalOpenSaleAmount();
-    //         console.log("round2Real :", Number(round2Real));
+        //     let round2Real = await saleContract.totalOpenSaleAmount();
+        //     console.log("round2Real :", Number(round2Real));
 
-    //         let burnToken = await saleToken.balanceOf(saleContract.address);
-    //         console.log("burnToken :", Number(burnToken));
-    //     })
+        //     let burnToken = await saleToken.balanceOf(saleContract.address);
+        //     console.log("burnToken :", Number(burnToken));
+        // })
 
 
-    //     it("#7-9. depositWithdraw test after exchangeWTONtoTOS", async () => {
-    //         let balance1 = await ton.balanceOf(fundVaultAddress);
-    //         expect(balance1).to.be.equal(0);
-    //         console.log("1");
-    //         await saleContract.connect(saleOwner).depositWithdraw();
+        // it("#7-9. depositWithdraw test after exchangeWTONtoTOS", async () => {
+        //     let balance1 = await ton.balanceOf(fundVaultAddress);
+        //     expect(balance1).to.be.equal(0);
+        //     console.log("1");
+        //     await saleContract.connect(saleOwner).depositWithdraw();
 
-    //         let balance2 = await ton.balanceOf(fundVaultAddress);
-    //         console.log("balance2 :",Number(balance2));
-    //         expect(balance2).to.be.equal(getTokenOwnerHaveTON);
-    //     })
+        //     let balance2 = await ton.balanceOf(fundVaultAddress);
+        //     console.log("balance2 :",Number(balance2));
+        //     expect(balance2).to.be.equal(getTokenOwnerHaveTON);
+        // })
 
-    //     it("#7-10. check non sale token burn", async () => {
-    //         let remainToken = await saleToken.balanceOf(saleContract.address);
-    //         expect(remainToken).to.be.equal(0);
-    //     })
-    // })
+        // it("#7-10. check non sale token burn", async () => {
+        //     let remainToken = await saleToken.balanceOf(saleContract.address);
+        //     expect(remainToken).to.be.equal(0);
+        // })
+    })
 })
