@@ -4,8 +4,6 @@ pragma solidity ^0.8.16;
 import "./TickMath.sol";
 import "./OracleLibrary.sol";
 
-import "hardhat/console.sol";
-
 interface IIUniswapV3Factory {
     function getPool(address,address,uint24) external view returns (address);
 }
@@ -91,7 +89,6 @@ library LibPublicSale {
     ) public view returns  (uint256 amountOutMinimum, uint256 priceLimit, uint160 sqrtPriceX96Limit) {
         IIUniswapV3Pool pool = IIUniswapV3Pool(_pool);
         (, int24 tick,,,,,) =  pool.slot0();
-        console.log("1-1");
         int24 _tick = tick;
         if(token0 < token1) {
             _tick = tick - acceptTickCounts * 60;
@@ -100,7 +97,6 @@ library LibPublicSale {
             _tick = tick + acceptTickCounts * 60;
             if(_tick > TickMath.MAX_TICK ) _tick =  TickMath.MAX_TICK ;
         }
-        console.log("1-2");
         address token1_ = token1;
         address token0_ = token0;
         return (

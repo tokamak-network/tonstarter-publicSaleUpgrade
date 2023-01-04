@@ -2,12 +2,13 @@
 pragma solidity ^0.8.16;
 pragma abicoder v2;
 
+import { OnApprove } from "./OnApprove.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "../interfaces/IPublicSale.sol";
-import "../common/ProxyAccessCommon.sol";
-import "./PublicSaleStorage.sol";
 
+import "./PublicSaleStorage.sol";
+import "../common/ProxyAccessCommon.sol";
+import "../interfaces/IPublicSale.sol";
 import "../libraries/LibPublicSale.sol";
 
 import "hardhat/console.sol";
@@ -69,6 +70,46 @@ contract PublicSale is
             "PublicSale: not beforeEndAddWhiteTime"
         );
         _;
+    }
+
+    function onApprove(
+        address sender,
+        address spender,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        require(msg.sender == address(getToken) || msg.sender == address(IIWTON(wton)), "PublicSale: only accept TON and WTON approve callback");
+        if(msg.sender == address(getToken)) {
+            uint256 wtonAmount = _decodeApproveData(data);
+            if(wtonAmount == 0){
+                if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
+                    exclusiveSale(sender,amount);
+                } else {
+                    require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
+                    deposit(sender,amount);
+                }
+            } else {
+                uint256 totalAmount = amount + wtonAmount;
+                if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
+                    exclusiveSale(sender,totalAmount);
+                }
+                else {
+                    require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
+                    deposit(sender,totalAmount);
+                }
+            }
+        } else if (msg.sender == address(IIWTON(wton))) {
+            uint256 wtonAmount = _toWAD(amount);
+            if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
+                exclusiveSale(sender,wtonAmount);
+            }
+            else {
+                require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
+                deposit(sender,wtonAmount);
+            }
+        }
+
+        return true;
     }
 
     /// @inheritdoc IPublicSale
@@ -821,7 +862,6 @@ contract PublicSale is
     {
         require(amountIn > 0, "zero input amount");
         require(block.timestamp > endDepositTime,"PublicSale: need to end the depositTime");
-        console.log("1");
 
         uint256 liquidityTON = hardcapCalcul();
         require(liquidityTON > 0, "PublicSale: don't pass the hardCap");
@@ -829,7 +869,6 @@ contract PublicSale is
         (uint160 sqrtPriceX96, int24 tick,,,,,) =  IIUniswapV3Pool(poolAddress).slot0();
         require(sqrtPriceX96 > 0, "pool is not initialized");
 
-        console.log("2");
 
         int24 timeWeightedAverageTick = OracleLibrary.consult(poolAddress, 120);
         require(
@@ -838,12 +877,10 @@ contract PublicSale is
             "It's not allowed changed tick range."
         );
 
-        console.log("3");
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
         
         uint256 wtonAmount = IERC20(wton).balanceOf(address(this));
-        console.log("4");
         if(wtonAmount == 0 && exchangeTOS != true) {
             IIWTON(wton).swapFromTON(liquidityTON);
             exchangeTOS = true;
@@ -851,7 +888,6 @@ contract PublicSale is
             require(wtonAmount >= amountIn, "PublicSale : amountIn is too large");
         }
 
-        console.log("5");
         ISwapRouter.ExactInputSingleParams memory params =
             ISwapRouter.ExactInputSingleParams({
                 tokenIn: wton,
