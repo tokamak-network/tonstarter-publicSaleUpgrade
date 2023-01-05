@@ -1243,7 +1243,7 @@ describe("Sale", () => {
 
             it("#6-1-5. exclusiveSale before exclusive startTime", async () => {
                 await getToken.connect(account1).approve(saleContract.address, 60)
-                let tx = saleContract.connect(account1).exclusiveSale(account1.address,60)
+                let tx = saleContract.connect(account1).exclusiveSale(60)
                 await expect(tx).to.be.revertedWith("PublicSale: exclusiveStartTime has not passed")
             })
 
@@ -1306,7 +1306,7 @@ describe("Sale", () => {
 
         describe("#6-2. round2 Sale", () => {
             it("#6-2-1. deposit before depositTime", async () => {
-                let tx = saleContract.connect(account1).deposit(account1.address,100)
+                let tx = saleContract.connect(account1).deposit(100)
                 await expect(tx).to.be.revertedWith("PublicSale: don't start depositTime")
             })
 

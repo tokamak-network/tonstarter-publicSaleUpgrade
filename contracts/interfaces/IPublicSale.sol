@@ -179,14 +179,12 @@ interface IPublicSale {
     function addWhiteList() external;
 
     /// @dev execute exclusive sale
-    /// @param _sender user address
     /// @param _amount  amount
-    function exclusiveSale(address _sender,uint256 _amount) external;
+    function exclusiveSale(uint256 _amount) external;
 
     /// @dev execute deposit
-    /// @param _sender user address
     /// @param _amount  amount
-    function deposit(address _sender,uint256 _amount) external;
+    function deposit(uint256 _amount) external;
 
     /// @dev execute the claim
     function claim() external;

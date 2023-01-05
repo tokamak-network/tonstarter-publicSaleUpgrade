@@ -83,29 +83,29 @@ contract PublicSale is
             uint256 wtonAmount = _decodeApproveData(data);
             if(wtonAmount == 0){
                 if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
-                    exclusiveSale(sender,amount);
+                    _exclusiveSale(sender,amount);
                 } else {
                     require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
-                    deposit(sender,amount);
+                    _deposit(sender,amount);
                 }
             } else {
                 uint256 totalAmount = amount + wtonAmount;
                 if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
-                    exclusiveSale(sender,totalAmount);
+                    _exclusiveSale(sender,totalAmount);
                 }
                 else {
                     require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
-                    deposit(sender,totalAmount);
+                    _deposit(sender,totalAmount);
                 }
             }
         } else if (msg.sender == address(IIWTON(wton))) {
             uint256 wtonAmount = _toWAD(amount);
             if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
-                exclusiveSale(sender,wtonAmount);
+                _exclusiveSale(sender,wtonAmount);
             }
             else {
                 require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
-                deposit(sender,wtonAmount);
+                _deposit(sender,wtonAmount);
             }
         }
 
@@ -692,11 +692,20 @@ contract PublicSale is
 
     /// @inheritdoc IPublicSale
     function exclusiveSale(
-        address _sender,
         uint256 _amount
     )
         public
         override
+    {
+        _exclusiveSale(msg.sender,_amount);
+    }
+
+    
+    function _exclusiveSale(
+        address _sender,
+        uint256 _amount
+    )
+        internal
         nonZero(_amount)
         nonZero(totalClaimCounts)
     {
@@ -737,11 +746,21 @@ contract PublicSale is
 
     /// @inheritdoc IPublicSale
     function deposit(
+        uint256 _amount
+    )   
+        public
+        override
+
+    {
+        _deposit(msg.sender,_amount);
+    }
+
+    function _deposit(
         address _sender,
         uint256 _amount
     )
-        public
-        override
+        internal
+        nonZero(_amount)
     {
         require(
             block.timestamp >= startDepositTime,
