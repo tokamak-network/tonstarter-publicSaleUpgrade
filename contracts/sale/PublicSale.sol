@@ -120,6 +120,7 @@ contract PublicSale is
         override
         onlyProxyOwner
     {
+        require(getTokenOwner != _address,"PublicSale: same addr");
         getTokenOwner = _address;
     }
     
@@ -129,6 +130,7 @@ contract PublicSale is
         external
         onlyOwner
     {   
+        require(changeTick != _tick,"PublicSale: same value");
         changeTick = _tick;
     }
 
