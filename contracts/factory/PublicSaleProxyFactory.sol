@@ -90,7 +90,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
         proxy.addProxyAdmin(upgradeAdmin);
         proxy.addAdmin(upgradeAdmin);
         proxy.addAdmin(_owner);
-        proxy.upgradeTo(publicLogic);
+        proxy.setImplementation2(publicLogic, 0, true);
 
         proxy.initialize(
             saleAddresses[0],

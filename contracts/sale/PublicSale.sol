@@ -263,6 +263,8 @@ contract PublicSale is
     {
         if(totalClaimCounts != 0) {
             require(isProxyAdmin(msg.sender), "only DAO can set");
+            delete claimTimes;
+            delete claimPercents;
         }
         
         totalClaimCounts = _claimCounts;
