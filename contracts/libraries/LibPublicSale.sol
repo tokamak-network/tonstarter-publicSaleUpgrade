@@ -56,6 +56,17 @@ library LibPublicSale {
         return OracleLibrary.getQuoteAtTick(tick, amountIn, baseToken, quoteToken);
     }
 
+    function getPoolAddress(address _wton, address _tos) public view returns(address) {
+        address factory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
+        return IIUniswapV3Factory(factory).getPool(_wton, _tos, 3000);
+    }
+
+    function getTokenOrder(address _pool) public view returns(address,address) {
+        address token0 = IIUniswapV3Pool(_pool).token0();
+        address token1 = IIUniswapV3Pool(_pool).token1();
+        return (token0, token1);
+    }
+
     function getMiniTick(int24 tickSpacings) public pure returns (int24){
         return (TickMath.MIN_TICK / tickSpacings) * tickSpacings ;
     }

@@ -26,6 +26,16 @@ interface IIVestingPublicFundAction {
     function funding(uint256 amount) external;
 }
 
+interface IIQuoter {
+    function quoteExactInputSingle(
+        address tokenIn,
+        address tokenOut,
+        uint24 fee,
+        uint256 amountIn,
+        uint160 sqrtPriceLimitX96
+    ) external returns (uint256 amountOut);
+}
+
 contract PublicSale is
     PublicSaleStorage,
     ProxyAccessCommon,
@@ -892,7 +902,6 @@ contract PublicSale is
         (uint160 sqrtPriceX96, int24 tick,,,,,) =  IIUniswapV3Pool(poolAddress).slot0();
         require(sqrtPriceX96 > 0, "pool is not initialized");
 
-
         int24 timeWeightedAverageTick = OracleLibrary.consult(poolAddress, 120);
         require(
             LibPublicSale.acceptMinTick(timeWeightedAverageTick, 60, 8) <= tick
@@ -902,8 +911,17 @@ contract PublicSale is
 
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
+
+        uint256 amountOutMinimum2 = IIQuoter(quoter).quoteExactInputSingle(
+            wton,
+            address(tos),
+            poolFee,
+            amountIn,
+            0
+        );
         
         uint256 wtonAmount = IERC20(wton).balanceOf(address(this));
+        
         if(wtonAmount == 0 && exchangeTOS != true) {
             IIWTON(wton).swapFromTON(liquidityTON);
             exchangeTOS = true;
@@ -923,7 +941,7 @@ contract PublicSale is
                 sqrtPriceLimitX96: sqrtPriceLimitX96
             });
         uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
-        console.log("6");
+        
         emit Withdrawal(msg.sender, amountOut);
     }
     
