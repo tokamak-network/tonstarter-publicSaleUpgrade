@@ -194,8 +194,7 @@ interface IPublicSale {
 
     /// @dev execute the exchangeWTONtoTOS
     function exchangeWTONtoTOS(
-        uint256 amountIn,
-        address poolAddress
+        uint256 amountIn
     ) 
         external;
 

@@ -887,8 +887,7 @@ contract PublicSale is
     }
 
     function exchangeWTONtoTOS(
-        uint256 amountIn,
-        address poolAddress
+        uint256 amountIn
     ) 
         external
         override
@@ -898,6 +897,8 @@ contract PublicSale is
 
         uint256 liquidityTON = hardcapCalcul();
         require(liquidityTON > 0, "PublicSale: don't pass the hardCap");
+
+        address poolAddress = LibPublicSale.getPoolAddress(wton,address(tos));
 
         (uint160 sqrtPriceX96, int24 tick,,,,,) =  IIUniswapV3Pool(poolAddress).slot0();
         require(sqrtPriceX96 > 0, "pool is not initialized");
@@ -912,13 +913,25 @@ contract PublicSale is
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
 
-        uint256 amountOutMinimum2 = IIQuoter(quoter).quoteExactInputSingle(
-            wton,
-            address(tos),
-            poolFee,
-            amountIn,
-            0
+        (bool success, bytes memory result) = quoter.staticcall(
+            abi.encodeWithSignature(
+                "quoteExactInputSingle(address,address,uint24,uint256,uint160)", 
+                wton,address(tos),poolFee,amountIn,0
+            )
         );
+        
+        require(success == true, "PublicSale : need the Quoter staticCall");
+
+        uint256 amountOutMinimum2 = abi.decode(result, (uint256));
+
+        amountOutMinimum2 = amountOutMinimum2 * 995 / 1000; //slippage 0.5% apply
+        
+        console.log("amountOutMinimum2 :", amountOutMinimum2);
+
+        //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
+        //quoter 값이 더 작으면 priceImpact가 더크게 작용하니 거래는 실패해야함
+        require(amountOutMinimum2 >= amountOutMinimum, "PublicSale : priceImpact over");
+        
         
         uint256 wtonAmount = IERC20(wton).balanceOf(address(this));
         
@@ -937,7 +950,7 @@ contract PublicSale is
                 recipient: liquidityVaultAddress,
                 deadline: block.timestamp,
                 amountIn: amountIn,
-                amountOutMinimum: amountOutMinimum,
+                amountOutMinimum: amountOutMinimum2,
                 sqrtPriceLimitX96: sqrtPriceLimitX96
             });
         uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
