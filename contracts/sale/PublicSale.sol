@@ -907,19 +907,19 @@ contract PublicSale is
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
 
         console.log("amountOutMinimum :",amountOutMinimum);
-        (,bytes memory result) = address(quoter).staticcall(
+        (,bytes memory result) = address(quoter).call(
             abi.encodeWithSignature(
                 "quoteExactInputSingle(address,address,uint24,uint256,uint160)", 
                 wton,address(tos),poolFee,amountIn,0
             )
         );
         // uint256 a = uint256(bytes32(result));
-        // console.log("a : ",a);
-        console.log("result.length : ",result.length);
-        uint256 amountOutMinimum2 = abi.decode(result, (uint256));
-        // uint256 amountOutMinimum2 = parseRevertReason(result);
+        // console.log("result.length : ",result.length);
+        uint256 a = abi.decode(result, (uint256));
+        console.log("a : ",a);
+        uint256 amountOutMinimum2 = parseRevertReason(result);
+        amountOutMinimum2 = amountOutMinimum2 * 995 / 1000; //slippage 0.5% apply
         console.log("amountOutMinimum2 :", amountOutMinimum2);
-        amountOutMinimum2 = amountOutMinimum2 / 1000 * 995; //slippage 0.5% apply
         
 
         //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
@@ -944,7 +944,7 @@ contract PublicSale is
                 recipient: liquidityVaultAddress,
                 deadline: block.timestamp,
                 amountIn: amountIn,
-                amountOutMinimum: amountOutMinimum2,
+                amountOutMinimum: amountOutMinimum,
                 sqrtPriceLimitX96: sqrtPriceLimitX96
             });
         uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);

@@ -38,6 +38,7 @@ const {
 
 const PublicSale_ABI = require('../../artifacts/contracts/sale/PublicSale.sol/PublicSale.json');
 const PublicSaleProxy_ABI = require('../../artifacts/contracts/sale/PublicSaleProxy.sol/PublicSaleProxy.json');
+const LibPublicSale_ABI = require('../../artifacts/contracts/libraries/LibPublicSale.sol/LibPublicSale.json');
 // const PublicSaleTest_ABI = require('../../artifacts/contracts/sale/PublicSaleTest.sol/PublicSaleTest.json');
 // const PublicSale2_ABI = require('../../artifacts/contracts/sale/PublicSale2.sol/PublicSale2.json');
 // const PublicSaleForDoM_ABI = require('../../artifacts/contracts/sale/PublicSaleForDoM.sol/PublicSaleForDoM.json');
@@ -231,6 +232,7 @@ describe("Sale", () => {
     let deploySaleImpl;
     let deploySaleImpl2;
     let libPublicSale;
+    let libPublicSaleContract;
     let libPublicSale2;
     let uniswapRouter;
     let testTemp;
@@ -778,6 +780,7 @@ describe("Sale", () => {
 
             saleContract = new ethers.Contract( publicSaleContract.contractAddress, PublicSale_ABI.abi, ethers.provider );
             publicProxy = new ethers.Contract( publicSaleContract.contractAddress, PublicSaleProxy_ABI.abi, ethers.provider );
+            libPublicSaleContract = new ethers.Contract( publicSaleContract.contractAddress, LibPublicSale_ABI.abi, ethers.provider);
             let deployTime1 = await saleContract.deployTime();
             // console.log(Number(deployTime1))
             deployTime = Number(await time.latest())
@@ -1440,6 +1443,12 @@ describe("Sale", () => {
             let tosValue = await tos.balanceOf(vaultAddress);
             expect(tosValue).to.be.equal(0);
             await saleContract.connect(saleOwner).exchangeWTONtoTOS(contractChangeWTON4);
+        })
+
+        it("#7. token test", async () => {
+            let wtontosPool = await libPublicSaleContract.getPoolAddress(uniswapInfo.wton,uniswapInfo.tos);
+            let tokenOrder = await libPublicSaleContract.getTokenOrder(wtontosPool);
+            console.log(tokenOrder);
         })
 
         // it("#7-8. check tos", async () => {
