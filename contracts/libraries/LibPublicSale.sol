@@ -126,4 +126,12 @@ library LibPublicSale {
              TickMath.getSqrtRatioAtTick(_tick)
         );
     }
+
+    function _decodeApproveData(
+        bytes memory data
+    ) public pure returns (uint256 approveData) {
+        assembly {
+            approveData := mload(add(data, 0x20))
+        }
+    }
 }

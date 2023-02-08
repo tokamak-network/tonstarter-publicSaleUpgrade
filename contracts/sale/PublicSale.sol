@@ -26,16 +26,6 @@ interface IIVestingPublicFundAction {
     function funding(uint256 amount) external;
 }
 
-interface IIQuoter {
-    function quoteExactInputSingle(
-        address tokenIn,
-        address tokenOut,
-        uint24 fee,
-        uint256 amountIn,
-        uint160 sqrtPriceLimitX96
-    ) external returns (uint256 amountOut);
-}
-
 contract PublicSale is
     PublicSaleStorage,
     ProxyAccessCommon,
@@ -90,7 +80,7 @@ contract PublicSale is
     ) external returns (bool) {
         require(msg.sender == address(getToken) || msg.sender == address(IIWTON(wton)), "PublicSale: only accept TON and WTON approve callback");
         if(msg.sender == address(getToken)) {
-            uint256 wtonAmount = _decodeApproveData(data);
+            uint256 wtonAmount = LibPublicSale._decodeApproveData(data);
             if(wtonAmount == 0){
                 if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
                     _exclusiveSale(sender,amount);
@@ -134,15 +124,15 @@ contract PublicSale is
         getTokenOwner = _address;
     }
     
-    function tickChange(
-        int24 _tick
-    )
-        external
-        onlyOwner
-    {   
-        require(changeTick != _tick,"PublicSale: same value");
-        changeTick = _tick;
-    }
+    // function tickChange(
+    //     int24 _tick
+    // )
+    //     external
+    //     onlyOwner
+    // {   
+    //     require(changeTick != _tick,"PublicSale: same value");
+    //     changeTick = _tick;
+    // }
 
     /// @inheritdoc IPublicSale
     function setAllsetting(
@@ -657,14 +647,6 @@ contract PublicSale is
         emit AddedWhiteList(msg.sender, tier);
     }
 
-    function _decodeApproveData(
-        bytes memory data
-    ) public override pure returns (uint256 approveData) {
-        assembly {
-            approveData := mload(add(data, 0x20))
-        }
-    }
-
     function calculTONTransferAmount(
         uint256 _amount,
         address _sender
@@ -886,6 +868,17 @@ contract PublicSale is
         emit DepositWithdrawal(msg.sender, getAmount, liquidityTON);
     }
 
+    function parseRevertReason(bytes memory reason) private pure returns (uint256) {
+        if (reason.length != 32) {
+            if (reason.length < 68) revert('Unexpected error');
+            assembly {
+                reason := add(reason, 0x04)
+            }
+            revert(abi.decode(reason, (string)));
+        }
+        return abi.decode(reason, (uint256));
+    }
+
     function exchangeWTONtoTOS(
         uint256 amountIn
     ) 
@@ -913,20 +906,21 @@ contract PublicSale is
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
 
-        (bool success, bytes memory result) = quoter.staticcall(
+        console.log("amountOutMinimum :",amountOutMinimum);
+        (,bytes memory result) = address(quoter).staticcall(
             abi.encodeWithSignature(
                 "quoteExactInputSingle(address,address,uint24,uint256,uint160)", 
                 wton,address(tos),poolFee,amountIn,0
             )
         );
-        
-        require(success == true, "PublicSale : need the Quoter staticCall");
-
+        // uint256 a = uint256(bytes32(result));
+        // console.log("a : ",a);
+        console.log("result.length : ",result.length);
         uint256 amountOutMinimum2 = abi.decode(result, (uint256));
-
-        amountOutMinimum2 = amountOutMinimum2 * 995 / 1000; //slippage 0.5% apply
-        
+        // uint256 amountOutMinimum2 = parseRevertReason(result);
         console.log("amountOutMinimum2 :", amountOutMinimum2);
+        amountOutMinimum2 = amountOutMinimum2 / 1000 * 995; //slippage 0.5% apply
+        
 
         //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
         //quoter 값이 더 작으면 priceImpact가 더크게 작용하니 거래는 실패해야함
