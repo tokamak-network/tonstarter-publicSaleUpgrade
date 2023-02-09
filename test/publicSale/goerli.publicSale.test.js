@@ -32,7 +32,9 @@ const {
     mintPosition2,
     getTick,
     // getMaxLiquidityPerTick,
-  } = require("./uniswap-v3/uniswap-v3-contracts");
+} = require("./uniswap-v3/uniswap-v3-contracts");
+
+const {getAddressInfo} = require('../config_info');
 
 // let UniswapV3Factory = require('../abis/UniswapV3Factory.json');
 
@@ -173,15 +175,22 @@ describe("Sale", () => {
     let totalBigAmount = ethers.utils.parseUnits("2000000", 18); //round1, round2 판매량
 
     let account1BigTONAmount = ethers.utils.parseUnits("200", 18);
+    let account1BigTONAmount2 = ethers.utils.parseUnits("60", 18);
     let account1BigWTONAmount = ethers.utils.parseUnits("60", 27);
     let account2BigTONAmount = ethers.utils.parseUnits("120", 18);
+    let account2BigTONAmount2 = ethers.utils.parseUnits("100", 18);
     // let account2BigWTONAmount = ethers.utils.parseUnits("400", 27);
     let account2BigWTONAmount = ethers.utils.parseUnits("100", 27);
     let account3BigTONAmount = ethers.utils.parseUnits("520", 18);
+    let account3BigTONAmount2 = ethers.utils.parseUnits("300", 18);
     let account3BigWTONAmount = ethers.utils.parseUnits("300", 27);
     let account4BigTONAmount = ethers.utils.parseUnits("1100", 18);
+    let account4BigTONAmount2 = ethers.utils.parseUnits("1100", 18);
     let account4BigWTONAmount = ethers.utils.parseUnits("1100", 27);
     let account6BigTONAmount = ethers.utils.parseUnits("300", 18);
+
+    let adminTONAmount = ethers.utils.parseUnits("50000", 18);
+    let adminWTONAmount = ethers.utils.parseUnits("50000", 27);
     
     let contracthaveTON = ethers.utils.parseUnits("1500", 18);
     let getTokenOwnerHaveTON = ethers.utils.parseUnits("1350", 18);
@@ -219,6 +228,7 @@ describe("Sale", () => {
     const version = "1.0";
     // const tosAmount = ethers.BigNumber.from('100000000000000000000');
     const tosAmount = 100000000000;
+    const admintosAmount = 100000000000 * 10;
     const tosuniAmount = ethers.utils.parseUnits("1000000", 18);
     const wtonuniAmount = ethers.utils.parseUnits("1000000", 27);
     let deployer, user1, user2;
@@ -254,6 +264,11 @@ describe("Sale", () => {
     let upgradeAdmin;
 
     let deployTime;
+
+    let config;
+
+    let manymoney;
+    let manymoney2;
 
     let tester1 = {
         account: null,
@@ -325,48 +340,33 @@ describe("Sale", () => {
          index : null
         },
     ]
-
-    let uniswapInfo_rinkeby ={
-        poolfactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-        npm: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-        swapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-        wethUsdcPool: "0xfbDc20aEFB98a2dD3842023f21D17004eAefbe68",
-        wtonWethPool: "0xE032a3aEc591fF1Ca88122928161eA1053a098AC",
-        wtonTosPool: "0x516e1af7303a94f81e91e4ac29e20f4319d4ecaf",
-        wton: "0x709bef48982Bbfd6F2D4Be24660832665F53406C",
-        tos: "0x73a54e5C054aA64C1AE7373C2B5474d8AFEa08bd",
-        weth: "0xc778417e063141139fce010982780140aa0cd5ab",
-        usdc: "0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b",
-        _fee: ethers.BigNumber.from("3000"),
-        NonfungibleTokenPositionDescriptor: "0x91ae842A5Ffd8d12023116943e72A606179294f3"
-    }
     
-    let uniswapInfo = {
-        poolfactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-        npm: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
-        swapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-        wethUsdcPool: "",
-        wtonWethPool: "0x9EF32Ae2acAF105557DB0E98E68c6CD4f1A1aE63",
-        wtonTosPool: "0x8DF54aDA313293E80634f981820969BE7542CEe9",
-        tosethPool: "0x3b466f5d9b49aedd65f6124d5986a9f30b1f5442",
-        wton: "0xe86fCf5213C785AcF9a8BFfEeDEfA9a2199f7Da6",
-        tos: "0x67F3bE272b1913602B191B3A68F7C238A2D81Bb9",
-        weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-        usdc: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        fee: ethers.BigNumber.from("3000"),
-        NonfungibleTokenPositionDescriptor:"0x91ae842A5Ffd8d12023116943e72A606179294f3",
-        UniswapV3Staker: "0xe34139463bA50bD61336E0c446Bd8C0867c6fE65",
-        ton: "0x68c1F9620aeC7F2913430aD6daC1bb16D8444F00",
-        lockTOSaddr: "0x69b4A202Fa4039B42ab23ADB725aA7b1e9EEBD79",
-        Quoter: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6",
-        aura: "0x80Eea029B5Cdb8A215Ae78e20B4fF81607F44A38",
-        lyda: "0x51C5E2D3dc8Ee66Dffdb1747dEB20d6b326E8bF2",
-        doc: "0x020A7c41212057B2A880191c07F7c7C7a71a8b57"
-    }
+    // let uniswapInfo = {
+    //     poolfactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    //     npm: "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+    //     swapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+    //     wethUsdcPool: "",
+    //     wtonWethPool: "0x9EF32Ae2acAF105557DB0E98E68c6CD4f1A1aE63",
+    //     wtonTosPool: "0x8DF54aDA313293E80634f981820969BE7542CEe9",
+    //     tosethPool: "0x3b466f5d9b49aedd65f6124d5986a9f30b1f5442",
+    //     wton: "0xe86fCf5213C785AcF9a8BFfEeDEfA9a2199f7Da6",
+    //     tos: "0x67F3bE272b1913602B191B3A68F7C238A2D81Bb9",
+    //     weth: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+    //     usdc: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    //     fee: ethers.BigNumber.from("3000"),
+    //     NonfungibleTokenPositionDescriptor:"0x91ae842A5Ffd8d12023116943e72A606179294f3",
+    //     UniswapV3Staker: "0xe34139463bA50bD61336E0c446Bd8C0867c6fE65",
+    //     ton: "0x68c1F9620aeC7F2913430aD6daC1bb16D8444F00",
+    //     lockTOSaddr: "0x69b4A202Fa4039B42ab23ADB725aA7b1e9EEBD79",
+    //     Quoter: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6",
+    //     aura: "0x80Eea029B5Cdb8A215Ae78e20B4fF81607F44A38",
+    //     lyda: "0x51C5E2D3dc8Ee66Dffdb1747dEB20d6b326E8bF2",
+    //     doc: "0x020A7c41212057B2A880191c07F7c7C7a71a8b57"
+    // }
     
 
-    let lockTOSAddress = "0x5adc7de3a0B4A4797f02C3E99265cd7391437568";
-    let tonAddress = "0x68c1F9620aeC7F2913430aD6daC1bb16D8444F00";
+    // let lockTOSAddress = "0x5adc7de3a0B4A4797f02C3E99265cd7391437568";
+    // let tonAddress = "0x68c1F9620aeC7F2913430aD6daC1bb16D8444F00";
 
     let price = {
         tos: ethers.BigNumber.from("1000"),
@@ -412,6 +412,27 @@ describe("Sale", () => {
         daoAccount = await findSigner(addresses[13]);
         upgradeAdmin = await findSigner(addresses[14]);
 
+        //goerli
+        // let testAccount = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
+        // let testAccount2 = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
+
+        //mainnet
+        let testAccount = "0x340C44089bc45F86060922d2d89eFee9e0CDF5c7"
+        let testAccount2 = "0x2Db13E39eaf889A433E0CB23C38520419eC37202"
+        
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [testAccount],
+        });
+
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [testAccount2],
+        });
+
+        manymoney = await ethers.getSigner(testAccount);
+        manymoney2 = await ethers.getSigner(testAccount2);
+
         saleContracts[0].owner = saleOwner;
         saleContracts[1].owner = account1;
         saleContracts[2].owner = account2;
@@ -430,6 +451,11 @@ describe("Sale", () => {
         // await hre.ethers.provider.send("hardhat_impersonateAccount",[lockTosAdmin]);
 
         // let _lockTosAdmin = await ethers.getSigner(lockTosAdmin);
+
+        // manymoney = 0x340C44089bc45F86060922d2d89eFee9e0CDF5c7;
+        // await hre.ethers.provider.send("hardhat_impersonateAccount",[manymoney]);
+
+        config = await getAddressInfo();
     });
 
     describe("#1 .setting the TON, WTON, LockTOS, SaleToken, eventLog", () => {
@@ -439,16 +465,57 @@ describe("Sale", () => {
             saleToken = await erc20token.connect(saleTokenOwner).deploy("testDoM", "AURA");
         });
 
+
+        // it("#1-2. setting the TON, WTON", async () => {
+        //     TokamakContractsDeployed =
+        //         await ico20Contracts.initializePlasmaEvmContracts(defaultSender);
+        //     const cons = await ico20Contracts.getPlasamContracts();
+        
+        //     ton = cons.ton;
+        //     wton = cons.wton;
+        
+        //     await ton.connect(saleTokenOwner).mint(saleTokenOwner.address,adminTONAmount);
+        //     await wton.connect(saleTokenOwner).mint(saleTokenOwner.address,adminWTONAmount);
+        // })
+
+
         it("#1-2. setting the TON", async () => {
-            ton = new ethers.Contract( tonAddress, TON_ABI.abi, ethers.provider );
+            ton = new ethers.Contract( config.addressinfo.ton, TON_ABI.abi, ethers.provider );
+            
+            // ton = await (
+            //     await ethers.getContractFactory(
+            //         TON_ABI.abi,
+            //         TON_ABI.bytecode
+            //     )
+            // ).connect(saleTokenOwner).deploy();
+            // await ton.deployed();
+            // await ton.connect(saleTokenOwner).mint(saleTokenOwner.address,adminTONAmount);
         })
 
         it("#1-3. setting the WTON", async () => {
-            wton = new ethers.Contract(uniswapInfo.wton, WTON_ABI.abi, ethers.provider );
+            wton = new ethers.Contract(config.addressinfo.wton, WTON_ABI.abi, ethers.provider );
+            
+            // wton = await (
+            //     await ethers.getContractFactory(
+            //         WTON_ABI.abi,
+            //         WTON_ABI.bytecode
+            //     )
+            // ).connect(saleTokenOwner).deploy(ton.address);
+            // await wton.deployed();
+            // await wton.connect(saleTokenOwner).mint(saleTokenOwner.address,adminWTONAmount);
         })
 
         it("#1-4. setting the TOS", async () => {
-            tos = new ethers.Contract(uniswapInfo.tos, TOS_ABI.abi, ethers.provider );
+            tos = new ethers.Contract(config.addressinfo.tos, TOS_ABI.abi, ethers.provider );
+            
+            // tos = await (
+            //     await ethers.getContractFactory(
+            //         TOS_ABI.abi,
+            //         TOS_ABI.bytecode
+            //     )
+            // ).connect(saleTokenOwner).deploy("TONStarter","TOS",1);
+            // await tos.deployed();
+            // await tos.connect(saleTokenOwner).mint(saleTokenOwner.address,admintosAmount);
         })
 
         // it("#1-5. setting the lockTOS", async () => {
@@ -547,9 +614,9 @@ describe("Sale", () => {
         it("#2-7. setUniswapInfoNTokens caller is not admin ", async () => {
             await expect(
                 initialVaultFactory.connect(account1).setUniswapInfoNTokens(
-                    [uniswapInfo.poolfactory,
-                    uniswapInfo.npm ],
-                    uniswapInfo.tos,
+                    [config.addressinfo.poolfactory,
+                    config.addressinfo.npm ],
+                    tos.address,
                     ethers.BigNumber.from("3000")
                 )
             ).to.be.revertedWith("Accessible: Caller is not an admin");
@@ -557,14 +624,14 @@ describe("Sale", () => {
 
         it("#2-8. setUniswapInfoNTokens caller is admin", async () => {
             await initialVaultFactory.connect(saleTokenOwner).setUniswapInfoNTokens(
-                [uniswapInfo.poolfactory,
-                uniswapInfo.npm],
-                uniswapInfo.tos,
+                [config.addressinfo.poolfactory,
+                config.addressinfo.npm],
+                tos.address,
                 ethers.BigNumber.from("3000")
             );
-            expect(await initialVaultFactory.uniswapV3Factory()).to.be.eq(uniswapInfo.poolfactory);
-            expect(await initialVaultFactory.nonfungiblePositionManager()).to.be.eq(uniswapInfo.npm);
-            expect(await initialVaultFactory.tos()).to.be.eq(uniswapInfo.tos);
+            expect(await initialVaultFactory.uniswapV3Factory()).to.be.eq(config.addressinfo.poolfactory);
+            expect(await initialVaultFactory.nonfungiblePositionManager()).to.be.eq(config.addressinfo.npm);
+            expect(await initialVaultFactory.tos()).to.be.eq(tos.address);
             expect(await initialVaultFactory.fee()).to.be.eq(ethers.BigNumber.from("3000"));
         });
 
@@ -645,6 +712,7 @@ describe("Sale", () => {
         it("#3-3. Deploy the LibPublicSale", async () => {
             const LibPublicSale = await ethers.getContractFactory("LibPublicSale");
             libPublicSale = await LibPublicSale.connect(saleOwner).deploy();
+            libPublicSaleContract = new ethers.Contract(libPublicSale.address, LibPublicSale_ABI.abi, ethers.provider);
         })
 
         it("#3-4. Initialize PublicSale", async function () {
@@ -659,23 +727,6 @@ describe("Sale", () => {
             expect(code).to.not.eq("0x");
         });
 
-        // it("#3-4. Deploy LibPublicSale2 ", async function () {
-        //     const LibPublicSale2 = await ethers.getContractFactory("LibPublicSale2");
-        //     libPublicSale2 = await LibPublicSale2.connect(saleOwner).deploy();
-        // });
-
-        // it("#3-5. Initialize PublicSale2", async function () {
-        //     let PublicSale2 = await ethers.getContractFactory("PublicSale2",{
-        //         libraries: {
-        //             LibPublicSale2: libPublicSale2.address
-        //         }
-        //     });
-        //     deploySaleImpl2 = await PublicSale2.connect(saleOwner).deploy();
-
-        //     let code = await saleOwner.provider.getCode(deploySaleImpl2.address);
-        //     expect(code).to.not.eq("0x");
-        // });
-
         it("#3-6. setting the Proxy basicSet from not admin", async () => {
             await expect(publicFactory.connect(account1).basicSet(
                 [
@@ -683,7 +734,7 @@ describe("Sale", () => {
                     wton.address,
                     lockTOS.address,
                     tos.address,
-                    uniswapInfo.swapRouter,
+                    config.addressinfo.swapRouter,
                     deploySaleImpl.address
                 ]
             )).to.be.revertedWith("Accessible: Caller is not an admin");
@@ -696,7 +747,7 @@ describe("Sale", () => {
                     wton.address,
                     lockTOS.address,
                     tos.address,
-                    uniswapInfo.swapRouter,
+                    config.addressinfo.swapRouter,
                     deploySaleImpl.address
                 ]
             )
@@ -704,22 +755,6 @@ describe("Sale", () => {
             let tx = await publicFactory.publicLogic();
             expect(tx).to.be.equal(deploySaleImpl.address);
         });
-
-        // it("#3-8. change the publicSale Address 1 -> 2 from admin", async () => {
-        //     await publicFactory.connect(saleTokenOwner).basicSet(
-        //         [
-        //             getToken.address,
-        //             wton.address,
-        //             lockTOS.address,
-        //             tos.address,
-        //             uniswapInfo.swapRouter,
-        //             deploySaleImpl2.address
-        //         ]
-        //     )
-
-        //     let tx = await publicFactory.publicLogic();
-        //     expect(tx).to.be.equal(deploySaleImpl2.address);
-        // });
         
         it("#3-9. set allset from admin", async () => {
             await publicFactory.connect(saleTokenOwner).allSet(
@@ -780,7 +815,6 @@ describe("Sale", () => {
 
             saleContract = new ethers.Contract( publicSaleContract.contractAddress, PublicSale_ABI.abi, ethers.provider );
             publicProxy = new ethers.Contract( publicSaleContract.contractAddress, PublicSaleProxy_ABI.abi, ethers.provider );
-            libPublicSaleContract = new ethers.Contract( publicSaleContract.contractAddress, LibPublicSale_ABI.abi, ethers.provider);
             let deployTime1 = await saleContract.deployTime();
             // console.log(Number(deployTime1))
             deployTime = Number(await time.latest())
@@ -798,18 +832,39 @@ describe("Sale", () => {
             //account3 = WTON 300, TON 520
             //account4 = WTON 0, TON 1100
             //account6 = WTON 0, TON 300
-            await getToken.connect(saleTokenOwner).transfer(account1.address, account1BigTONAmount)
-            await wton.connect(saleTokenOwner).transfer(account1.address, account1BigWTONAmount)
- 
-            await getToken.connect(saleTokenOwner).transfer(account2.address, account2BigTONAmount)
-            await wton.connect(saleTokenOwner).transfer(account2.address, account2BigWTONAmount)
+            // await getToken.connect(saleTokenOwner).mint(account1.address, account1BigTONAmount)
+            // await wton.connect(saleTokenOwner).transfer(account1.address, account1BigWTONAmount)    
 
-            await getToken.connect(saleTokenOwner).transfer(account3.address, account3BigTONAmount)
-            await wton.connect(saleTokenOwner).transfer(account3.address, account3BigWTONAmount)
+            // await getToken.connect(saleTokenOwner).transfer(account2.address, account2BigTONAmount)
+            // await wton.connect(saleTokenOwner).transfer(account2.address, account2BigWTONAmount)
 
-            await getToken.connect(saleTokenOwner).transfer(account4.address, account4BigTONAmount)
-            await getToken.connect(saleTokenOwner).transfer(account6.address, account6BigTONAmount)
+            // await getToken.connect(saleTokenOwner).transfer(account3.address, account3BigTONAmount)
+            // await wton.connect(saleTokenOwner).transfer(account3.address, account3BigWTONAmount)
+
+            // await getToken.connect(saleTokenOwner).transfer(account4.address, account4BigTONAmount)
+
+            // await getToken.connect(saleTokenOwner).transfer(account6.address, account6BigTONAmount)
         });
+
+        it("#3-12. transfer TON,WTON", async () => {
+            //account1 = WTON 60, TON 200
+            //account2 = WTON 400, TON 120
+            //account3 = WTON 300, TON 520
+            //account4 = WTON 0, TON 1100
+            //account6 = WTON 0, TON 300
+            await getToken.connect(manymoney).transfer(account1.address, account1BigTONAmount)
+            await wton.connect(manymoney2).transfer(account1.address, account1BigWTONAmount)    
+
+            await getToken.connect(manymoney).transfer(account2.address, account2BigTONAmount)
+            await wton.connect(manymoney2).transfer(account2.address, account2BigWTONAmount)
+
+            await getToken.connect(manymoney).transfer(account3.address, account3BigTONAmount)
+            await wton.connect(manymoney2).transfer(account3.address, account3BigWTONAmount)
+
+            await getToken.connect(manymoney).transfer(account4.address, account4BigTONAmount)
+            await getToken.connect(manymoney).transfer(account6.address, account6BigTONAmount)
+        })
+
 
         it("duration the time", async () => {
             await ethers.provider.send('evm_setNextBlockTimestamp', [deployTime + 600]);
@@ -817,11 +872,16 @@ describe("Sale", () => {
         })
 
         it("#3-12. transfer tos", async () => {
-            await tos.connect(deployer).transfer(tester1.account.address, tosAmount);
-            await tos.connect(deployer).transfer(tester2.account.address, tosAmount);
-            await tos.connect(deployer).transfer(tester3.account.address, tosAmount);
-            await tos.connect(deployer).transfer(tester4.account.address, tosAmount);
-            await tos.connect(deployer).transfer(tester6.account.address, tosAmount);
+            // await tos.connect(deployer).transfer(tester1.account.address, tosAmount);
+            // await tos.connect(deployer).transfer(tester2.account.address, tosAmount);
+            // await tos.connect(deployer).transfer(tester3.account.address, tosAmount);
+            // await tos.connect(deployer).transfer(tester4.account.address, tosAmount);
+            // await tos.connect(deployer).transfer(tester6.account.address, tosAmount);
+            await tos.connect(manymoney).transfer(tester1.account.address, tosAmount);
+            await tos.connect(manymoney).transfer(tester2.account.address, tosAmount);
+            await tos.connect(manymoney).transfer(tester3.account.address, tosAmount);
+            await tos.connect(manymoney).transfer(tester4.account.address, tosAmount);
+            await tos.connect(manymoney).transfer(tester6.account.address, tosAmount);
         })
 
         it("#3-13. should create locks for user", async function () {
@@ -1446,9 +1506,15 @@ describe("Sale", () => {
         })
 
         it("#7. token test", async () => {
-            let wtontosPool = await libPublicSaleContract.getPoolAddress(uniswapInfo.wton,uniswapInfo.tos);
+            let wtontosPool = await libPublicSaleContract.getPoolAddress(config.addressinfo.wton,config.addressinfo.tos);
             let tokenOrder = await libPublicSaleContract.getTokenOrder(wtontosPool);
-            console.log(tokenOrder);
+            console.log("token0 :",tokenOrder[0]);
+            console.log("token1 :",tokenOrder[1]);
+            const { chainId } = await ethers.provider.getNetwork();
+            console.log("chainId : ",chainId);
+            console.log("config.wton : ", config.addressinfo.wton);
+            console.log("config.tos : ", config.addressinfo.tos);
+            console.log("config.wtonTosPool : ", config.addressinfo.wtonTosPool);
         })
 
         // it("#7-8. check tos", async () => {

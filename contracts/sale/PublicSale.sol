@@ -921,11 +921,9 @@ contract PublicSale is
         amountOutMinimum2 = amountOutMinimum2 * 995 / 1000; //slippage 0.5% apply
         console.log("amountOutMinimum2 :", amountOutMinimum2);
         
-
         //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
         //quoter 값이 더 작으면 priceImpact가 더크게 작용하니 거래는 실패해야함
         require(amountOutMinimum2 >= amountOutMinimum, "PublicSale : priceImpact over");
-        
         
         uint256 wtonAmount = IERC20(wton).balanceOf(address(this));
         

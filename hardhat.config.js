@@ -18,24 +18,25 @@ module.exports = {
     local: {
       chainId: 31337,
       url: `http://127.0.0.1:8545/`,
-      accounts: [
-        `${process.env.PRIVATE_KEY}`,
-        `${process.env.LOCAL_KEY}`,
-        `${process.env.LOCAL_KEY2}`,
-        `${process.env.LOCAL_KEY3}`,
-        `${process.env.LOCAL_KEY4}`,
-        `${process.env.LOCAL_KEY5}`,
-        `${process.env.LOCAL_KEY6}`,
-        `${process.env.LOCAL_KEY7}`,
-        `${process.env.LOCAL_KEY8}`,
-        `${process.env.LOCAL_KEY9}`,
-        `${process.env.LOCAL_KEY10}`,
-        `${process.env.LOCAL_KEY11}`,
-        `${process.env.LOCAL_KEY12}`,
-        `${process.env.LOCAL_KEY13}`,
-        `${process.env.LOCAL_KEY14}`,
-        `${process.env.LOCAL_KEY15}`
-      ]
+      // accounts: [
+      //   // `${process.env.PRIVATE_KEY}`,
+      //   `${process.env.LOCAL_KEY}`,
+      //   `${process.env.LOCAL_KEY2}`,
+      //   `${process.env.LOCAL_KEY3}`,
+      //   `${process.env.LOCAL_KEY4}`,
+      //   `${process.env.LOCAL_KEY5}`,
+      //   `${process.env.LOCAL_KEY6}`,
+      //   `${process.env.LOCAL_KEY7}`,
+      //   `${process.env.LOCAL_KEY8}`,
+      //   `${process.env.LOCAL_KEY9}`,
+      //   `${process.env.LOCAL_KEY10}`,
+      //   `${process.env.LOCAL_KEY11}`,
+      //   `${process.env.LOCAL_KEY12}`,
+      //   `${process.env.LOCAL_KEY13}`,
+      //   `${process.env.LOCAL_KEY14}`,
+      //   `${process.env.LOCAL_KEY15}`,
+      //   `${process.env.LOCAL_KEY16}`,
+      // ]
     },
     // rinkeby: {
     //   url: `https://rinkeby.infura.io/v3/${process.env.InfuraKey}`,
