@@ -63,18 +63,26 @@ let uniswapInfo_mainnet = {
     lockTOSaddr2: "0x69b4A202Fa4039B42ab23ADB725aA7b1e9EEBD79"
 }
 
-let networkName = "mainnet"
-// let networkName = "goerli"
+// let networkName = "mainnet"
+let networkName = "goerli"
 let addressinfo;
 
-async function getAddressInfo() {
-    if (networkName == "mainnet") {
+async function getAddressInfo(chainId) {
+
+    if (chainId == 1) {
         addressinfo = uniswapInfo_mainnet
-    } else if (networkName == "goerli") {
+    } else if (chainId == 5) {
         addressinfo = uniswapInfo_goerli
-    } else if (networkName == "rinkeby") {
+    } else if (chainId == 4) {
         addressinfo = uniswapInfo_rinkeby
     }
+    // if (networkName == "mainnet") {
+    //     addressinfo = uniswapInfo_mainnet
+    // } else if (networkName == "goerli") {
+    //     addressinfo = uniswapInfo_goerli
+    // } else if (networkName == "rinkeby") {
+    //     addressinfo = uniswapInfo_rinkeby
+    // }
 
     return {
         addressinfo

@@ -65,6 +65,8 @@ const zeroAddress = "0x0000000000000000000000000000000000000000";
 
 //typeC로 세팅 업그레이드 테스트
 describe("Sale", () => {
+    let chainId = 5
+
     //mockERC20으로 doc, ton 배포함
     //시나리오
     //티어별 참여자가 여러명일때 모든 풀에 참여자가 있을때 테스트 (티어1,2,3,4에 모든 유저가 whitelist했고 exclusive했을 경우)
@@ -412,13 +414,25 @@ describe("Sale", () => {
         daoAccount = await findSigner(addresses[13]);
         upgradeAdmin = await findSigner(addresses[14]);
 
-        //goerli
+        // //goerli
         // let testAccount = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
         // let testAccount2 = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
 
-        //mainnet
-        let testAccount = "0x340C44089bc45F86060922d2d89eFee9e0CDF5c7"
-        let testAccount2 = "0x2Db13E39eaf889A433E0CB23C38520419eC37202"
+        // //mainnet
+        // let testAccount = "0x340C44089bc45F86060922d2d89eFee9e0CDF5c7"
+        // let testAccount2 = "0x2Db13E39eaf889A433E0CB23C38520419eC37202"
+
+        let testAccount
+        let testAccount2
+
+
+        if(chainId == 1) {
+            testAccount = "0x340C44089bc45F86060922d2d89eFee9e0CDF5c7"
+            testAccount2 = "0x2Db13E39eaf889A433E0CB23C38520419eC37202"
+        } else if(chainId == 5) {
+            testAccount = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
+            testAccount2 = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
+        }
         
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -455,7 +469,7 @@ describe("Sale", () => {
         // manymoney = 0x340C44089bc45F86060922d2d89eFee9e0CDF5c7;
         // await hre.ethers.provider.send("hardhat_impersonateAccount",[manymoney]);
 
-        config = await getAddressInfo();
+        config = await getAddressInfo(chainId);
     });
 
     describe("#1 .setting the TON, WTON, LockTOS, SaleToken, eventLog", () => {
@@ -1498,23 +1512,38 @@ describe("Sale", () => {
             let overflow = Number(getAmount)-Number(hardcapValue);
             console.log("overflow :", Number(overflow));
         })
-        
-        it("#7-7. exchangeWTONtoTOS test", async () => {
-            let tosValue = await tos.balanceOf(vaultAddress);
-            expect(tosValue).to.be.equal(0);
-            await saleContract.connect(saleOwner).exchangeWTONtoTOS(contractChangeWTON4);
-        })
 
-        it("#7. token test", async () => {
+        it("#7-7. Tick change Test before exchangeWTONtoTOS", async () => {
             let wtontosPool = await libPublicSaleContract.getPoolAddress(config.addressinfo.wton,config.addressinfo.tos);
             let tokenOrder = await libPublicSaleContract.getTokenOrder(wtontosPool);
             console.log("token0 :",tokenOrder[0]);
             console.log("token1 :",tokenOrder[1]);
+            console.log("tick :",tokenOrder[2]);
+
+            if(tokenOrder[0] < tokenOrder[1]){
+                console.log("tokenOrder[0] < tokenOrder[1]")
+            } else if (tokenOrder[0] > tokenOrder[1]) {
+                console.log("tokenOrder[0] > tokenOrder[1]")
+            }
             const { chainId } = await ethers.provider.getNetwork();
             console.log("chainId : ",chainId);
             console.log("config.wton : ", config.addressinfo.wton);
             console.log("config.tos : ", config.addressinfo.tos);
             console.log("config.wtonTosPool : ", config.addressinfo.wtonTosPool);
+        })
+        
+        it("#7-8. exchangeWTONtoTOS test", async () => {
+            let tosValue = await tos.balanceOf(vaultAddress);
+            expect(tosValue).to.be.equal(0);
+            await saleContract.connect(saleOwner).exchangeWTONtoTOS(contractChangeWTON4);
+        })
+
+        it("#7-9. Tick change Test after exchangeWTONtoTOS", async () => {
+            let wtontosPool = await libPublicSaleContract.getPoolAddress(config.addressinfo.wton,config.addressinfo.tos);
+            let tokenOrder = await libPublicSaleContract.getTokenOrder(wtontosPool);
+            console.log("token0 :",tokenOrder[0]);
+            console.log("token1 :",tokenOrder[1]);
+            console.log("tick :",tokenOrder[2]);
         })
 
         // it("#7-8. check tos", async () => {

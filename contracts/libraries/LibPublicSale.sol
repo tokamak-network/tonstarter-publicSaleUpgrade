@@ -4,6 +4,8 @@ pragma solidity ^0.8.16;
 import "./TickMath.sol";
 import "./OracleLibrary.sol";
 
+import "hardhat/console.sol";
+
 interface IIUniswapV3Factory {
     function getPool(address,address,uint24) external view returns (address);
 }
@@ -61,10 +63,11 @@ library LibPublicSale {
         return IIUniswapV3Factory(factory).getPool(_wton, _tos, 3000);
     }
 
-    function getTokenOrder(address _pool) public view returns(address,address) {
+    function getTokenOrder(address _pool) public view returns(address,address,int24) {
         address token0 = IIUniswapV3Pool(_pool).token0();
         address token1 = IIUniswapV3Pool(_pool).token1();
-        return (token0, token1);
+        (,int24 nowtick,,,,,) = IIUniswapV3Pool(_pool).slot0();
+        return (token0, token1,nowtick);
     }
 
     function getMiniTick(int24 tickSpacings) public pure returns (int24){
