@@ -63,6 +63,10 @@ library LibPublicSale {
         return IIUniswapV3Factory(factory).getPool(_wton, _tos, 3000);
     }
 
+    function getTimeWeightTick(address _pool,uint32 _period) public view returns (int24) {
+        return OracleLibrary.consult(_pool, _period);
+    }
+
     function getTokenOrder(address _pool) public view returns(address,address,int24) {
         address token0 = IIUniswapV3Pool(_pool).token0();
         address token1 = IIUniswapV3Pool(_pool).token1();

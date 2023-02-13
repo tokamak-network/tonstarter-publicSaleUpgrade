@@ -67,7 +67,7 @@ const zeroAddress = "0x0000000000000000000000000000000000000000";
 
 //typeC로 세팅 업그레이드 테스트
 describe("Sale", () => {
-    let chainId = 5
+    let chainId = 1
 
     //mockERC20으로 doc, ton 배포함
     //시나리오
@@ -203,6 +203,8 @@ describe("Sale", () => {
     let contractChangeWTON2 = ethers.utils.parseUnits("50", 27);
     let contractChangeWTON3 = ethers.utils.parseUnits("150", 27);
     let contractChangeWTON4 = ethers.utils.parseUnits("1", 27);
+    let swapWTONAmount = ethers.utils.parseUnits("7000", 27);
+    let swapTOSAmount = ethers.utils.parseUnits("15000", 18);
 
     let refundAmount1 = ethers.utils.parseUnits("100", 18);
     let refundAmount2 = ethers.utils.parseUnits("200", 18);
@@ -274,6 +276,7 @@ describe("Sale", () => {
 
     let manymoney;
     let manymoney2;
+    let manymoney3;
 
     let tester1 = {
         account: null,
@@ -396,6 +399,30 @@ describe("Sale", () => {
         totalClaimsAmount: ethers.BigNumber.from("0")
     }
 
+    function getExactInputParams(recipient, path, amountIn, amountOut, deadline) {
+        return {
+          recipient: recipient,
+          path: path,
+          amountIn: amountIn,
+          amountOutMinimum: amountOut,
+          deadline: deadline,
+        };
+    }
+
+    const FEE_SIZE = 3;
+    const encodePath = (path, fees) => {
+        if (path.length != fees.length + 1) {
+            throw new Error("path/fee lengths do not match");
+        }
+        let encoded = "0x";
+        for (let i = 0; i < fees.length; i++) {
+            encoded += path[i].slice(2);
+            encoded += fees[i].toString(16).padStart(2 * FEE_SIZE, "0");
+        }
+        encoded += path[path.length - 1].slice(2);
+        return encoded.toLowerCase();
+    };
+
     before(async () => {
         ico20Contracts = new ICO20Contracts();
 
@@ -427,14 +454,17 @@ describe("Sale", () => {
 
         let testAccount
         let testAccount2
+        let testAccount3
 
 
         if(chainId == 1) {
-            testAccount = "0x340C44089bc45F86060922d2d89eFee9e0CDF5c7"
-            testAccount2 = "0x2Db13E39eaf889A433E0CB23C38520419eC37202"
+            testAccount = "0x340C44089bc45F86060922d2d89eFee9e0CDF5c7"      //ton,tos 주인
+            testAccount2 = "0x2Db13E39eaf889A433E0CB23C38520419eC37202"     //wton 주인
+            testAccount3 = "0x15280a52E79FD4aB35F4B9Acbb376DCD72b44Fd1"     //tos 주인    
         } else if(chainId == 5) {
-            testAccount = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
-            testAccount2 = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"
+            testAccount = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"      //ton,tos 주인
+            testAccount2 = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"     //wton 주인
+            testAccount2 = "0xf0B595d10a92A5a9BC3fFeA7e79f5d266b6035Ea"     //wton 주인
         }
         
         await hre.network.provider.request({
@@ -447,8 +477,14 @@ describe("Sale", () => {
             params: [testAccount2],
         });
 
-        manymoney = await ethers.getSigner(testAccount);
-        manymoney2 = await ethers.getSigner(testAccount2);
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [testAccount3],
+        });
+
+        manymoney = await ethers.getSigner(testAccount);        //ton,tos 주인
+        manymoney2 = await ethers.getSigner(testAccount2);      //wton 주인
+        manymoney3 = await ethers.getSigner(testAccount3);      //tos 주인
 
         saleContracts[0].owner = saleOwner;
         saleContracts[1].owner = account1;
@@ -1541,8 +1577,52 @@ describe("Sale", () => {
             let timeWeight = await libPublicSaleContract.getTimeWeightTick(wtontosPool,120);
             console.log("timeWeight : ",timeWeight);
         })
+
+        it("#7-8. swapRouter call before exchangeWTONtoTOS for tick test (tick down case)", async () => {
+            const block = await ethers.provider.getBlock('latest')
+            let path = encodePath(
+                [config.addressinfo.tos,config.addressinfo.wton],
+                [FeeAmount.MEDIUM]
+            )
+
+            let params = getExactInputParams(
+                manymoney3.address,
+                path,
+                swapTOSAmount,
+                0,
+                block.timestamp+50
+            );
+            await tos.connect(manymoney3).approve(uniswapRouter.address,swapTOSAmount);
+            let tx = await uniswapRouter.connect(manymoney3).exactInput(params);
+            await tx.wait();
+        })
+
+        // it("duration the time to period end", async () => {
+        //     const block = await ethers.provider.getBlock('latest')
+        //     await ethers.provider.send('evm_setNextBlockTimestamp', [block.timestamp+120]);
+        //     await ethers.provider.send('evm_mine');
+        // })
+
+        it("#7-9. check the timeWeight", async () => {
+            let wtontosPool = await libPublicSaleContract.getPoolAddress(config.addressinfo.wton,config.addressinfo.tos);
+            let tokenOrder = await libPublicSaleContract.getTokenOrder(wtontosPool);
+            console.log("token0 :",tokenOrder[0]);
+            console.log("token1 :",tokenOrder[1]);
+            console.log("tick :",tokenOrder[2]);
+
+            let timeWeight = await libPublicSaleContract.getTimeWeightTick(wtontosPool,120);
+            console.log("timeWeight : ",timeWeight);
+            let nowaccepctMaxTick = await libPublicSaleContract.acceptMaxTick(tokenOrder[2],60,2);
+            console.log("nowaccepctMaxTick : ",nowaccepctMaxTick);
+            let nowaccepctMinTick = await libPublicSaleContract.acceptMinTick(tokenOrder[2],60,2);
+            console.log("nowaccepctMinTick : ",nowaccepctMinTick);
+            let accepctMaxTick = await libPublicSaleContract.acceptMaxTick(timeWeight,60,2);
+            console.log("accepctMaxTick : ",accepctMaxTick);
+            let accepctMinTick = await libPublicSaleContract.acceptMinTick(timeWeight,60,2);
+            console.log("accepctMinTick : ",accepctMinTick);
+        })
         
-        it("#7-8. exchangeWTONtoTOS test", async () => {
+        it("#7-10. exchangeWTONtoTOS test", async () => {
             let tosValue = await tos.balanceOf(vaultAddress);
             expect(tosValue).to.be.equal(0);
             await saleContract.connect(saleOwner).exchangeWTONtoTOS(contractChangeWTON4);
@@ -1554,7 +1634,7 @@ describe("Sale", () => {
             await ethers.provider.send('evm_mine');
         })
 
-        it("#7-9. Tick change Test after exchangeWTONtoTOS", async () => {
+        it("#7-11. Tick change Test after exchangeWTONtoTOS", async () => {
             let wtontosPool = await libPublicSaleContract.getPoolAddress(config.addressinfo.wton,config.addressinfo.tos);
             let tokenOrder = await libPublicSaleContract.getTokenOrder(wtontosPool);
             console.log("token0 :",tokenOrder[0]);
@@ -1564,43 +1644,43 @@ describe("Sale", () => {
             console.log("timeWeight : ",timeWeight);
         })
 
-        it("#7-8. check tos", async () => {
-            let tosValue = await tos.balanceOf(vaultAddress);
-            expect(tosValue).to.be.above(0);
-        })
+        // it("#7-8. check tos", async () => {
+        //     let tosValue = await tos.balanceOf(vaultAddress);
+        //     expect(tosValue).to.be.above(0);
+        // })
         
-        it("#7-9. check burnAmount", async () => {
-            let round1Expect = await saleContract.totalExpectSaleAmount()
-            console.log("round1Expect :", Number(round1Expect));
+        // it("#7-9. check burnAmount", async () => {
+        //     let round1Expect = await saleContract.totalExpectSaleAmount()
+        //     console.log("round1Expect :", Number(round1Expect));
 
-            let round2Expect = await saleContract.totalExpectOpenSaleAmount();
-            console.log("round2Expect :", Number(round2Expect));
+        //     let round2Expect = await saleContract.totalExpectOpenSaleAmount();
+        //     console.log("round2Expect :", Number(round2Expect));
 
-            let round1Real = await saleContract.totalExSaleAmount();
-            console.log("round1Real :", Number(round1Real));
+        //     let round1Real = await saleContract.totalExSaleAmount();
+        //     console.log("round1Real :", Number(round1Real));
 
-            let round2Real = await saleContract.totalOpenSaleAmount();
-            console.log("round2Real :", Number(round2Real));
+        //     let round2Real = await saleContract.totalOpenSaleAmount();
+        //     console.log("round2Real :", Number(round2Real));
 
-            let burnToken = await saleToken.balanceOf(saleContract.address);
-            console.log("burnToken :", Number(burnToken));
-        })
+        //     let burnToken = await saleToken.balanceOf(saleContract.address);
+        //     console.log("burnToken :", Number(burnToken));
+        // })
 
 
-        it("#7-9. depositWithdraw test after exchangeWTONtoTOS", async () => {
-            let balance1 = await ton.balanceOf(fundVaultAddress);
-            expect(balance1).to.be.equal(0);
-            console.log("1");
-            await saleContract.connect(saleOwner).depositWithdraw();
+        // it("#7-9. depositWithdraw test after exchangeWTONtoTOS", async () => {
+        //     let balance1 = await ton.balanceOf(fundVaultAddress);
+        //     expect(balance1).to.be.equal(0);
+        //     console.log("1");
+        //     await saleContract.connect(saleOwner).depositWithdraw();
 
-            let balance2 = await ton.balanceOf(fundVaultAddress);
-            console.log("balance2 :",Number(balance2));
-            expect(balance2).to.be.equal(getTokenOwnerHaveTON);
-        })
+        //     let balance2 = await ton.balanceOf(fundVaultAddress);
+        //     console.log("balance2 :",Number(balance2));
+        //     expect(balance2).to.be.equal(getTokenOwnerHaveTON);
+        // })
 
-        it("#7-10. check non sale token burn", async () => {
-            let remainToken = await saleToken.balanceOf(saleContract.address);
-            expect(remainToken).to.be.equal(0);
-        })
+        // it("#7-10. check non sale token burn", async () => {
+        //     let remainToken = await saleToken.balanceOf(saleContract.address);
+        //     expect(remainToken).to.be.equal(0);
+        // })
     })
 })

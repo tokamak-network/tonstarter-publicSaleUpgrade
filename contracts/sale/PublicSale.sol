@@ -898,8 +898,7 @@ contract PublicSale is
 
         int24 timeWeightedAverageTick = OracleLibrary.consult(poolAddress, 120);
         require(
-            LibPublicSale.acceptMinTick(timeWeightedAverageTick, 60, 8) <= tick
-            && tick < LibPublicSale.acceptMaxTick(timeWeightedAverageTick, 60, 8),
+            tick < LibPublicSale.acceptMaxTick(timeWeightedAverageTick, 60, 2),
             "It's not allowed changed tick range."
         );
 
