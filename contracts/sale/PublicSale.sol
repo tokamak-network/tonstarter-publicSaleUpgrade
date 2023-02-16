@@ -124,15 +124,15 @@ contract PublicSale is
         getTokenOwner = _address;
     }
     
-    // function tickChange(
-    //     int24 _tick
-    // )
-    //     external
-    //     onlyOwner
-    // {   
-    //     require(changeTick != _tick,"PublicSale: same value");
-    //     changeTick = _tick;
-    // }
+    function tickChange(
+        int24 _tick
+    )
+        external
+        onlyOwner
+    {   
+        require(changeTick != _tick,"PublicSale: same value");
+        changeTick = _tick;
+    }
 
     /// @inheritdoc IPublicSale
     function setAllsetting(
@@ -912,13 +912,12 @@ contract PublicSale is
                 wton,address(tos),poolFee,amountIn,0
             )
         );
-        // uint256 a = uint256(bytes32(result));
-        // console.log("result.length : ",result.length);
-        uint256 a = abi.decode(result, (uint256));
-        console.log("a : ",a);
+        
+        // uint256 a = abi.decode(result, (uint256));
+        // console.log("a : ",a);
         uint256 amountOutMinimum2 = parseRevertReason(result);
-        console.log("amountOutMinimum2 :", amountOutMinimum2);
         amountOutMinimum2 = amountOutMinimum2 * 995 / 1000; //slippage 0.5% apply
+        console.log("amountOutMinimum2 :", amountOutMinimum2);
         
         //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
         //quoter 값이 더 작으면 priceImpact가 더크게 작용하니 거래는 실패해야함
@@ -941,7 +940,7 @@ contract PublicSale is
                 recipient: liquidityVaultAddress,
                 deadline: block.timestamp,
                 amountIn: amountIn,
-                amountOutMinimum: amountOutMinimum,
+                amountOutMinimum: amountOutMinimum2,
                 sqrtPriceLimitX96: sqrtPriceLimitX96
             });
         uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
