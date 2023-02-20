@@ -88,6 +88,8 @@ describe("Quoter test", () => {
 
     let wtonhave;
 
+    let beforeBalance, afterBalance;
+
     before(async () => {
         const addresses = await getAddresses();
         account1 = await findSigner(addresses[0]);
@@ -133,7 +135,7 @@ describe("Quoter test", () => {
         })
 
         it("#2-2. Quoter get balance, before qutoerCall", async () => {
-            const beforeBalance = await quoteExactInputSingle(
+            beforeBalance = await quoteExactInputSingle(
                 quoter,
                 wton.address,
                 tos.address,
@@ -150,7 +152,7 @@ describe("Quoter test", () => {
         })
 
         it("#2-4. Quoter get balance, after qutoerCall", async () => {
-            const afterBalance = await quoteExactInputSingle(
+            afterBalance = await quoteExactInputSingle(
                 quoter,
                 wton.address,
                 tos.address,
@@ -158,6 +160,7 @@ describe("Quoter test", () => {
                 wtonAmount
             )
             console.log("beforeBalance :",Number(afterBalance));
+            expect(beforeBalance).to.be.equal(afterBalance);
         })
     })
 
@@ -169,7 +172,7 @@ describe("Quoter test", () => {
         })
 
         it("#3-2. Quoter get balance, before qutoerCall", async () => {
-            const beforeBalance = await quoteExactInputSingle(
+            beforeBalance = await quoteExactInputSingle(
                 quoter,
                 wton.address,
                 tos.address,
@@ -186,7 +189,7 @@ describe("Quoter test", () => {
         })
 
         it("#3-4. Quoter get balance, after qutoerCall", async () => {
-            const afterBalance = await quoteExactInputSingle(
+            afterBalance = await quoteExactInputSingle(
                 quoter,
                 wton.address,
                 tos.address,
@@ -194,6 +197,7 @@ describe("Quoter test", () => {
                 wtonAmount2
             )
             console.log("beforeBalance :",Number(afterBalance));
+            expect(beforeBalance).to.be.equal(afterBalance);
         })
     })
 })
