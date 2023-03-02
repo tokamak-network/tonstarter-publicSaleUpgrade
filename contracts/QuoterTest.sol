@@ -18,13 +18,19 @@ contract QuoterTest {
     ) 
         external 
     {
-        (,bytes memory result) = address(quoter).call(
+        (bool success,bytes memory result) = address(quoter).call(
             abi.encodeWithSignature(
                 "quoteExactInputSingle(address,address,uint24,uint256,uint160)", 
                 _token0,_token1,poolFee,_amountIn,0
             )
         );
         uint256 amountOutMinimum = parseRevertReason(result);
+        uint32 test = 1000000000;
+        uint256 test2 = uint256(test);
+
+        console.log("success :", success);
+        console.log("test :", test);
+        console.log("test2 :", test2);
         
         console.log("amountOutMinimum :",amountOutMinimum);
         console.log("end quoterCall");
