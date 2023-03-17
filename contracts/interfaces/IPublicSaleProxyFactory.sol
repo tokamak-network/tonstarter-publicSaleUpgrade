@@ -26,10 +26,10 @@ interface IPublicSaleProxyFactory {
         external;
 
     /// @dev setting the address, value
-    /// @param _addr [upgradeAdmin, initailVault, eventLog]
+    /// @param _addr [upgradeAdmin, initailVault, eventLog, initializer]
     /// @param _value [minTOS, maxTOS, sTOSTier1, sTOSTier2, sTOSTier3, sTOSTier4, delayTime]
     function allSet(
-        address[3] calldata _addr,
+        address[4] calldata _addr,
         uint256[7] calldata _value
     ) 
         external;
@@ -60,6 +60,13 @@ interface IPublicSaleProxyFactory {
     /// @dev setting the eventLog
     /// @param _addr logContract addr
     function setEventLog(
+        address _addr
+    )
+        external;  
+    
+    /// @dev setting the initializer
+    /// @param _addr initializer addr
+    function setInitializer(
         address _addr
     )
         external;

@@ -36,6 +36,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
 
     address public vaultFactory;
     address public logEventAddress;
+    address public initializerAddress;
 
     address public publicLogic;    
     address public upgradeAdmin;
@@ -122,7 +123,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
             delayTime
         );
 
-
+        proxy.addAdmin(initializerAddress);
         proxy.removeAdmin();
 
         createdContracts[totalCreatedContracts] = ContractInfo(address(proxy), name);
@@ -159,7 +160,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
     }
 
     function allSet(
-        address[3] calldata _addr,
+        address[4] calldata _addr,
         uint256[7] calldata _value
     ) 
         external
@@ -169,6 +170,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
         setUpgradeAdmin(_addr[0]);
         setVault(_addr[1]);
         setEventLog(_addr[2]);
+        setInitializer(_addr[3]);
         setMaxMin(_value[0],_value[1]);
         setSTOS(_value[2],_value[3],_value[4],_value[5]);
         setDelay(_value[6]);
@@ -206,6 +208,17 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
     {   
         require(_addr != logEventAddress, "same addrs");
         logEventAddress = _addr;
+    }
+
+    function setInitializer(
+        address _addr
+    )
+        public
+        override
+        onlyOwner
+    {
+        require(_addr != initializerAddress, "same addrs");
+        initializerAddress = _addr;
     }
 
     function setMaxMin(
