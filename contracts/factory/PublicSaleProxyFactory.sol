@@ -91,6 +91,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
         proxy.addProxyAdmin(upgradeAdmin);
         proxy.addAdmin(upgradeAdmin);
         proxy.addAdmin(_owner);
+        proxy.addAdmin(initializerAddress);
         proxy.setImplementation2(publicLogic, 0, true);
 
         proxy.initialize(
@@ -123,7 +124,6 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
             delayTime
         );
 
-        proxy.addAdmin(initializerAddress);
         proxy.removeAdmin();
 
         createdContracts[totalCreatedContracts] = ContractInfo(address(proxy), name);

@@ -161,6 +161,7 @@ contract PublicSale is
         setTier(
             _Tier[0], _Tier[1], _Tier[2], _Tier[3]
         );
+        console.log("1");
         setTierPercents(
             _Tier[4], _Tier[5], _Tier[6], _Tier[7]
         );
@@ -907,7 +908,6 @@ contract PublicSale is
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, wton, address(tos), changeTick);
 
-        console.log("amountOutMinimum :",amountOutMinimum);
         (,bytes memory result) = address(quoter).call(
             abi.encodeWithSignature(
                 "quoteExactInputSingle(address,address,uint24,uint256,uint160)", 
@@ -915,11 +915,8 @@ contract PublicSale is
             )
         );
         
-        // uint256 a = abi.decode(result, (uint256));
-        // console.log("a : ",a);
         uint256 amountOutMinimum2 = parseRevertReason(result);
         amountOutMinimum2 = amountOutMinimum2 * 995 / 1000; //slippage 0.5% apply
-        console.log("amountOutMinimum2 :", amountOutMinimum2);
         
         //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
         //quoter 값이 더 작으면 priceImpact가 더크게 작용하니 거래는 실패해야함
