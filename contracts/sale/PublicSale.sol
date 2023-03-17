@@ -39,7 +39,7 @@ contract PublicSale is
     event Deposited(address indexed from, uint256 amount);
 
     event Claimed(address indexed from, uint256 amount);
-    event Withdrawal(address indexed from, uint256 amount);
+    event ExchangeSwap(address indexed from, uint256 amountIn, uint256 amountOut);
     event DepositWithdrawal(address indexed from, uint256 amount, uint256 liquidityAmount);
 
     event Refunded(address indexed from, uint256 amount);
@@ -947,7 +947,7 @@ contract PublicSale is
             });
         uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
         
-        emit Withdrawal(msg.sender, amountOut);
+        emit ExchangeSwap(msg.sender, amountIn ,amountOut);
     }
     
 }
