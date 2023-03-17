@@ -860,7 +860,9 @@ contract PublicSale is
         adminWithdraw = true;
 
         uint256 burnAmount = totalExpectSaleAmount.add(totalExpectOpenSaleAmount).sub(totalOpenSaleAmount()).sub(totalExSaleAmount);
-        IIERC20Burnable(address(saleToken)).burn(burnAmount);
+        if(burnAmount != 0) {
+            IIERC20Burnable(address(saleToken)).burn(burnAmount);
+        }
         
         IERC20(getToken).approve(address(getTokenOwner), getAmount);
         IIVestingPublicFundAction(getTokenOwner).funding(getAmount);
