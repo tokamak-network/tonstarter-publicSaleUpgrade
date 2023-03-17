@@ -864,7 +864,7 @@ contract PublicSale is
             IIERC20Burnable(address(saleToken)).burn(burnAmount);
         }
         
-        IERC20(getToken).approve(address(getTokenOwner), getAmount);
+        IERC20(getToken).approve(address(getTokenOwner), getAmount + 10 ether);
         IIVestingPublicFundAction(getTokenOwner).funding(getAmount);
 
         emit DepositWithdrawal(msg.sender, getAmount, liquidityTON);
