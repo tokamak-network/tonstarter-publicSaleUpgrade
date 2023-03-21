@@ -59,6 +59,7 @@ contract PublicSaleStorage  {
     address public quoter = 0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6;
 
     address public getTokenOwner;
+    address public vestingFund;
     address public wton;
     address public getToken;
 

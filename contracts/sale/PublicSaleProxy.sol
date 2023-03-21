@@ -33,12 +33,12 @@ contract PublicSaleProxy is
     /// @dev Initialize
     function initialize(
         address _saleTokenAddress,
-        address _getTokenOwner,
+        address _setVestingFund,
         address _vaultAddress
     ) external override onlyProxyOwner {
         require(startAddWhiteTime == 0, "possible to setting the whiteTime before");
         saleToken = IERC20(_saleTokenAddress);
-        getTokenOwner = _getTokenOwner;
+        vestingFund = _setVestingFund;
         liquidityVaultAddress = _vaultAddress;
         deployTime = block.timestamp;
     }

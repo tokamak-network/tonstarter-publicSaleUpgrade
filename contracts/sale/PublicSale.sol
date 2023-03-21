@@ -113,15 +113,15 @@ contract PublicSale is
     }
 
     /// @inheritdoc IPublicSale
-    function changeTONOwner(
+    function changeFund(
         address _address
     )
         external
         override
         onlyProxyOwner
     {
-        require(getTokenOwner != _address,"PublicSale: same addr");
-        getTokenOwner = _address;
+        require(vestingFund != _address,"PublicSale: same addr");
+        vestingFund = _address;
     }
     
     function tickChange(
@@ -865,8 +865,8 @@ contract PublicSale is
             IIERC20Burnable(address(saleToken)).burn(burnAmount);
         }
         
-        IERC20(getToken).approve(address(getTokenOwner), getAmount + 10 ether);
-        IIVestingPublicFundAction(getTokenOwner).funding(getAmount);
+        IERC20(getToken).approve(address(vestingFund), getAmount + 10 ether);
+        IIVestingPublicFundAction(vestingFund).funding(getAmount);
 
         emit DepositWithdrawal(msg.sender, getAmount, liquidityTON);
     }
@@ -887,6 +887,7 @@ contract PublicSale is
     ) 
         external
         override
+        returns (uint256 amountOut)
     {
         require(amountIn > 0, "zero input amount");
         require(block.timestamp > endDepositTime,"PublicSale: need to end the depositTime");
@@ -942,9 +943,13 @@ contract PublicSale is
                 amountOutMinimum: amountOutMinimum2,
                 sqrtPriceLimitX96: sqrtPriceLimitX96
             });
-        uint256 amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
+        amountOut = ISwapRouter(uniswapRouter).exactInputSingle(params);
         
         emit ExchangeSwap(msg.sender, amountIn ,amountOut);
+    }
+
+    function availableInitializer(address _addr) external view returns (bool result) {
+        if (snapshot != 0 && isAdmin(_addr)) result = true;
     }
     
 }

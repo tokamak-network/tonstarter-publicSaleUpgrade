@@ -3,7 +3,7 @@ pragma solidity ^0.8.16;
 
 interface IPublicSale {
     /// @dev set changeTONOwner
-    function changeTONOwner(
+    function changeFund(
         address _address
     ) external; 
 
@@ -196,7 +196,8 @@ interface IPublicSale {
     function exchangeWTONtoTOS(
         uint256 amountIn
     ) 
-        external;
+        external
+        returns (uint256 amountOut);
 
     function _toWAD(uint256 v) external pure returns (uint256);
 

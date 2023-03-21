@@ -62,7 +62,7 @@ contract PublicSaleProxyFactory is AccessibleCommon, IPublicSaleProxyFactory {
 
     /// @inheritdoc IPublicSaleProxyFactory
     /// @notice _logic = PublicSale, _owner = contract admin
-    /// saleAddress[0] = _saleTokenAddress, saleAddress[1] = getTokenOwner, saleAddress[2] = liquidityVaultAddress
+    /// saleAddress[0] = _saleTokenAddress, saleAddress[1] = VestingFundAddress, saleAddress[2] = liquidityVaultAddress
     function create(
         string calldata name,
         address _owner,
