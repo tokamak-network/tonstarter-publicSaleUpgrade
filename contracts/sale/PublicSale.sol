@@ -11,7 +11,7 @@ import "../common/ProxyAccessCommon.sol";
 import "../interfaces/IPublicSale.sol";
 import "../libraries/LibPublicSale.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 interface IIERC20Burnable {
     function burn(uint256 amount) external ;

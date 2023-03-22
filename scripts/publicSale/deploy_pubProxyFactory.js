@@ -49,9 +49,10 @@ async function deployFactory() {
     const minPer = 5
     const maxPer = 10
 
+    const upgradeaddr = "0x8c595DA827F4182bC0E3917BccA8e654DF8223E1"
     const initialLiuiqidty = "0x174e97B891701D207BD48087Fe9e3b3d10ed7c99" //factory
     const eventAddr2 = "0xcCcFc0c04c8c751f0ffF7CAf4340f2155BB352C8"
-    const upgradeaddr = "0x8c595DA827F4182bC0E3917BccA8e654DF8223E1"
+    const initializer = "0xE56f199482B6402Aabe9EFD19194c3dBdf789F31"
 
 
     const BASE_TEN = 10
@@ -84,7 +85,8 @@ async function deployFactory() {
         [
             upgradeaddr,
             initialLiuiqidty,
-            eventAddr2
+            eventAddr2,
+            initializer
         ],
         [
             minPer,
