@@ -129,11 +129,11 @@ describe("Sale", () => {
     let testTotalSalesAmount = ethers.utils.parseUnits("1500000", 18);
 
 
-    let claimPercent1 = 30;
-    let claimPercent2 = 20;
-    let claimPercent3 = 20;
-    let claimPercent4 = 20;
-    let claimPercent5 = 10;
+    let claimPercent1 = 3000;
+    let claimPercent2 = 2000;
+    let claimPercent3 = 2000;
+    let claimPercent4 = 2000;
+    let claimPercent5 = 1000;
     
     let claimTime1, claimTime2, claimTime3, claimTime4, claimTime5;
 

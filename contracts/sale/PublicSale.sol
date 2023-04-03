@@ -280,7 +280,7 @@ contract PublicSale is
             claimPercents.push(y);
         }
 
-        require(y == 100, "claimPercents err");
+        require(y == 10000, "claimPercents err");
     }
 
     /// @inheritdoc IPublicSale
@@ -553,15 +553,15 @@ contract PublicSale is
         }
 
         if(_round == 0) {
-            amount = realSaleAmount.mul(claimPercents[round.sub(1)]).div(100);
+            amount = realSaleAmount.mul(claimPercents[round.sub(1)]).div(10000);
             amount = amount.sub(userClaim.claimAmount);
             return (amount, realSaleAmount, refundAmount);
         } else if(_round == 1) {
-            amount = realSaleAmount.mul(claimPercents[0]).div(100);
+            amount = realSaleAmount.mul(claimPercents[0]).div(10000);
             return (amount, realSaleAmount, refundAmount);
         } else {
             uint256 roundPercent = claimPercents[_round.sub(1)].sub(claimPercents[_round.sub(2)]);
-            amount = realSaleAmount.mul(roundPercent).div(100);
+            amount = realSaleAmount.mul(roundPercent).div(10000);
             return (amount, realSaleAmount, refundAmount);
         }
     }
