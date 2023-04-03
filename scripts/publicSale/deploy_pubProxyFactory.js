@@ -7,18 +7,31 @@ let logicAddress;
 async function deployLogic() {
     const [deployer] = await ethers.getSigners()
     console.log("Deploying contract with the account :", deployer.address)
+    let PublicSale
+    let alreadyDeploy = true
+    let libPublicSaleAddress = "0x31512fA8D38d0aD35c0FF8A2F4385dCE0003a368";
 
-    const LibPublicSale = await ethers.getContractFactory("LibPublicSale");
-    let libPublicSale = await LibPublicSale.connect(deployer).deploy();
-    await libPublicSale.deployed();
-
-    console.log("libPublicSale : ", libPublicSale.address);
-
-    let PublicSale = await ethers.getContractFactory("PublicSale",{
-        libraries: {
-            LibPublicSale: libPublicSale.address
-        }
-    });
+    if(!alreadyDeploy) {
+        const LibPublicSale = await ethers.getContractFactory("LibPublicSale");
+        let libPublicSale = await LibPublicSale.connect(deployer).deploy();
+        await libPublicSale.deployed();
+    
+        console.log("libPublicSale : ", libPublicSale.address);
+    
+        PublicSale = await ethers.getContractFactory("PublicSale",{
+            libraries: {
+                LibPublicSale: libPublicSale.address
+            }
+        });
+    } else {
+        //already deploy Library
+        PublicSale = await ethers.getContractFactory("PublicSale",{
+            libraries: {
+                LibPublicSale: libPublicSaleAddress
+            }
+        });
+        console.log("already deploy lib");
+    }
 
     const saleContract = await PublicSale.connect(deployer).deploy()
     logicAddress = saleContract.address;
@@ -104,7 +117,7 @@ async function deployFactory() {
 
 const main = async () => {
     await deployLogic()
-    await deployFactory()
+    // await deployFactory()
 }  // main
 
 main()
