@@ -134,6 +134,15 @@ contract PublicSale is
         changeTick = _tick;
     }
 
+    function sTOSchange(
+        address _sTOS
+    )
+        external
+        onlyProxyOwner
+    {
+        sTOS = ILockTOS(_sTOS);
+    }
+
     /// @inheritdoc IPublicSale
     function setAllsetting(
         uint256[8] calldata _Tier,
@@ -161,7 +170,7 @@ contract PublicSale is
         setTier(
             _Tier[0], _Tier[1], _Tier[2], _Tier[3]
         );
-        console.log("1");
+        
         setTierPercents(
             _Tier[4], _Tier[5], _Tier[6], _Tier[7]
         );

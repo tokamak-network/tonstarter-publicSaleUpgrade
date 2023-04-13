@@ -19,6 +19,7 @@ contract LimitPriceTest {
         int24 tick
     )   
         external
+        view
     {
         address poolAddress = LibPublicSale.getPoolAddress(token0,token1);
 
