@@ -45,12 +45,12 @@ contract PublicSale is
     event Refunded(address indexed from, uint256 amount);
 
     modifier nonZero(uint256 _value) {
-        require(_value > 0, "PublicSale: zero");
+        require(_value > 0, "zero");
         _;
     }
 
     modifier nonZeroAddress(address _addr) {
-        require(_addr != address(0), "PublicSale: zero address");
+        require(_addr != address(0), "zero addr");
         _;
     }
 
@@ -58,7 +58,7 @@ contract PublicSale is
         require(
             startAddWhiteTime == 0 ||
                 (startAddWhiteTime > 0 && block.timestamp < startAddWhiteTime),
-            "PublicSale: not beforeStartAddWhiteTime"
+            "not beforeStartAddWhiteTime"
         );
         _;
     }
@@ -67,7 +67,7 @@ contract PublicSale is
         require(
             endAddWhiteTime == 0 ||
                 (endAddWhiteTime > 0 && block.timestamp < endAddWhiteTime),
-            "PublicSale: not beforeEndAddWhiteTime"
+            "not beforeEndAddWhiteTime"
         );
         _;
     }
@@ -78,14 +78,14 @@ contract PublicSale is
         uint256 amount,
         bytes calldata data
     ) external returns (bool) {
-        require(msg.sender == address(getToken) || msg.sender == address(IIWTON(wton)), "PublicSale: only accept TON and WTON approve callback");
+        require(msg.sender == address(getToken) || msg.sender == address(IIWTON(wton)), "only TON and WTON");
         if(msg.sender == address(getToken)) {
             uint256 wtonAmount = LibPublicSale._decodeApproveData(data);
             if(wtonAmount == 0){
                 if(block.timestamp >= startExclusiveTime && block.timestamp < endExclusiveTime) {
                     _exclusiveSale(sender,amount);
                 } else {
-                    require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
+                    require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "not ST");
                     _deposit(sender,amount);
                 }
             } else {
@@ -94,7 +94,7 @@ contract PublicSale is
                     _exclusiveSale(sender,totalAmount);
                 }
                 else {
-                    require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
+                    require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "not ST");
                     _deposit(sender,totalAmount);
                 }
             }
@@ -104,7 +104,7 @@ contract PublicSale is
                 _exclusiveSale(sender,wtonAmount);
             }
             else {
-                require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "PublicSale: not SaleTime");
+                require(block.timestamp >= startDepositTime && block.timestamp < endDepositTime, "not ST");
                 _deposit(sender,wtonAmount);
             }
         }
@@ -120,7 +120,7 @@ contract PublicSale is
         override
         onlyProxyOwner
     {
-        require(vestingFund != _address,"PublicSale: same addr");
+        require(vestingFund != _address,"same addr");
         vestingFund = _address;
     }
     
@@ -164,7 +164,7 @@ contract PublicSale is
         require(_claimTimes.length > 0 &&  _claimTimes.length == _claimPercents.length, "need the claimSet");
         
         if(snapshot != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
         }
 
         setTier(
@@ -217,14 +217,14 @@ contract PublicSale is
         beforeStartAddWhiteTime
     {
         if(startAddWhiteTime != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
         }
 
         require(
             (_startAddWhiteTime < _endAddWhiteTime) &&
             (_endAddWhiteTime < _startExclusiveTime) &&
             (_startExclusiveTime < _endExclusiveTime),
-            "PublicSale : Round1time err"
+            "Round1time err"
         );
         startAddWhiteTime = _startAddWhiteTime;
         endAddWhiteTime = _endAddWhiteTime;
@@ -247,12 +247,12 @@ contract PublicSale is
         beforeStartAddWhiteTime
     {
          if(snapshot != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
         }
 
         require(
             (_startDepositTime < _endDepositTime),
-            "PublicSale : Round2time err"
+            "Round2time err"
         );
 
         snapshot = _snapshot;
@@ -272,7 +272,7 @@ contract PublicSale is
         beforeStartAddWhiteTime
     {
         if(totalClaimCounts != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
             delete claimTimes;
             delete claimPercents;
         }
@@ -283,7 +283,7 @@ contract PublicSale is
         for (i = 0; i < _claimCounts; i++) {
             claimTimes.push(_claimTimes[i]);
             if (i != 0){
-                require(claimTimes[i-1] < claimTimes[i], "PublicSale: claimtime err");
+                require(claimTimes[i-1] < claimTimes[i], "claimtime err");
             }
             y = y + _claimPercents[i];
             claimPercents.push(y);
@@ -302,7 +302,7 @@ contract PublicSale is
             stanTier2 <= _tier[1] &&
             stanTier3 <= _tier[2] &&
             stanTier4 <= _tier[3],
-            "tier set error"
+            "tier set"
         );
         setTier(
             _tier[0],
@@ -335,7 +335,7 @@ contract PublicSale is
         beforeStartAddWhiteTime
     {
         if(tiers[1] != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
         }
         tiers[1] = _tier1;
         tiers[2] = _tier2;
@@ -360,11 +360,11 @@ contract PublicSale is
         beforeStartAddWhiteTime
     {
         if(tiersPercents[1] != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
         }
         require(
             _tier1.add(_tier2).add(_tier3).add(_tier4) == 10000,
-            "PublicSale: Sum should be 10000"
+            "Sum need 10000"
         );
         tiersPercents[1] = _tier1;
         tiersPercents[2] = _tier2;
@@ -387,9 +387,11 @@ contract PublicSale is
         beforeStartAddWhiteTime 
     {
         if(totalExpectSaleAmount != 0) {
-            require(isProxyAdmin(msg.sender), "only DAO can set");
+            require(isProxyAdmin(msg.sender), "only DAO");
         }
-        require(_changePercent <= maxPer && _changePercent >= minPer,"PublicSale: need to set min,max");
+        require(_changePercent <= maxPer && _changePercent >= minPer,"need to set min,max");
+        require((_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount)) >= (_hardcapAmount.mul(_saleTokenPrice).div(_payTokenPrice)), "over hardcap");
+        // require(checkHardCapAmount(_totalExpectSaleAmount,_totalExpectOpenSaleAmount,_saleTokenPrice,_payTokenPrice,_hardcapAmount), "over hardcap");
         
         totalExpectSaleAmount = _totalExpectSaleAmount;
         totalExpectOpenSaleAmount = _totalExpectOpenSaleAmount;
@@ -401,6 +403,24 @@ contract PublicSale is
             changeTick = 18;
         }
     }
+
+    // function checkHardCapAmount(
+    //     uint256 _totalExpectSaleAmount,
+    //     uint256 _totalExpectOpenSaleAmount,
+    //     uint256 _saleTokenPrice,
+    //     uint256 _payTokenPrice,
+    //     uint256 _hardcapAmount
+    // )  
+    //     public
+    //     pure
+    //     returns(bool check)
+    // {
+    //     if (_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount) > _hardcapAmount.mul(_saleTokenPrice).div(_payTokenPrice)) {
+    //         check = true;
+    //     } else {
+    //         check = false;
+    //     }
+    // }
 
     /// @inheritdoc IPublicSale
     function totalExpectOpenSaleAmountView()
@@ -636,16 +656,16 @@ contract PublicSale is
     function addWhiteList() external override {
         require(
             block.timestamp >= startAddWhiteTime,
-            "PublicSale: whitelistStartTime has not passed"
+            "not whitelistTime"
         );
         require(
             block.timestamp < endAddWhiteTime,
-            "PublicSale: end the whitelistTime"
+            "end whitelistTime"
         );
         uint256 tier = calculTier(msg.sender);
-        require(tier >= 1, "PublicSale: need to more sTOS");
+        require(tier >= 1, "need to more sTOS");
         LibPublicSale.UserInfoEx storage userEx = usersEx[msg.sender];
-        require(userEx.join != true, "PublicSale: already attended");
+        require(userEx.join != true, "already attended");
 
         whitelists.push(msg.sender);
 
@@ -676,16 +696,16 @@ contract PublicSale is
             uint256 needUserWton;
             uint256 needWton = _amount.sub(tonAllowance);
             needUserWton = _toRAY(needWton);
-            require(IERC20(wton).allowance(_sender, address(this)) >= needUserWton, "PublicSale: wton exceeds allowance");
+            require(IERC20(wton).allowance(_sender, address(this)) >= needUserWton, "wton exceeds allowance");
             require(IERC20(wton).balanceOf(_sender) >= needUserWton, "need more wton");
             IERC20(wton).safeTransferFrom(_sender,address(this),needUserWton);
             IIWTON(wton).swapToTON(needUserWton);
-            require(tonAllowance >= _amount.sub(needWton), "PublicSale: ton exceeds allowance");
+            require(tonAllowance >= _amount.sub(needWton), "ton exceeds allowance");
             if (_amount.sub(needWton) > 0) {
                 IERC20(getToken).safeTransferFrom(_sender, address(this), _amount.sub(needWton));
             }
         } else {
-            require(tonAllowance >= _amount && tonBalance >= _amount, "PublicSale: ton exceeds allowance");
+            require(tonAllowance >= _amount && tonBalance >= _amount, "ton exceeds allowance");
             IERC20(getToken).safeTransferFrom(_sender, address(this), _amount);
         }
 
@@ -717,20 +737,20 @@ contract PublicSale is
     {
         require(
             block.timestamp >= startExclusiveTime,
-            "PublicSale: exclusiveStartTime has not passed"
+            "not exclusiveTime"
         );
         require(
             block.timestamp < endExclusiveTime,
-            "PublicSale: end the exclusiveTime"
+            "end exclusiveTime"
         );
         LibPublicSale.UserInfoEx storage userEx = usersEx[_sender];
-        require(userEx.join == true, "PublicSale: not registered in whitelist");
+        require(userEx.join == true, "no whitelist");
         uint256 tokenSaleAmount = calculSaleToken(_amount);
         uint256 salePossible = calculTierAmount(_sender);
 
         require(
             salePossible >= userEx.saleAmount.add(tokenSaleAmount),
-            "PublicSale: just buy tier's allocated amount"
+            "don't over buy"
         );
 
         uint256 tier = calculTier(_sender);
@@ -770,11 +790,11 @@ contract PublicSale is
     {
         require(
             block.timestamp >= startDepositTime,
-            "PublicSale: don't start depositTime"
+            "not depositTime"
         );
         require(
             block.timestamp < endDepositTime,
-            "PublicSale: end the depositTime"
+            "end depositTime"
         );
 
         LibPublicSale.UserInfoOpen storage userOpen = usersOpen[_sender];
@@ -797,13 +817,13 @@ contract PublicSale is
     function claim() external override {
         require(
             block.timestamp >= claimTimes[0],
-            "PublicSale: don't start claimTime"
+            "not claimTime"
         );
         LibPublicSale.UserInfoOpen storage userOpen = usersOpen[msg.sender];
         LibPublicSale.UserClaim storage userClaim = usersClaim[msg.sender];
         uint256 hardcapcut = hardcapCalcul();
         if (hardcapcut == 0) {
-            require(userClaim.exec != true, "PublicSale: already getRefund");
+            require(userClaim.exec != true, "already getRefund");
             LibPublicSale.UserInfoEx storage userEx = usersEx[msg.sender];
             uint256 refundTON = userEx.payAmount.add(userOpen.depositAmount);
             userClaim.exec = true;
@@ -815,16 +835,16 @@ contract PublicSale is
             (uint256 reward, uint256 realSaleAmount, uint256 refundAmount) = calculClaimAmount(msg.sender, 0);
             require(
                 realSaleAmount > 0,
-                "PublicSale: no purchase amount"
+                "no purchase amount"
             );
-            require(reward > 0, "PublicSale: no reward");
+            require(reward > 0, "no reward");
             require(
                 realSaleAmount.sub(userClaim.claimAmount) >= reward,
-                "PublicSale: already getAllreward"
+                "already getAllreward"
             );
             require(
                 saleToken.balanceOf(address(this)) >= reward,
-                "PublicSale: dont have saleToken in pool"
+                "dont have saleToken"
             );
 
             userClaim.claimAmount = userClaim.claimAmount.add(reward);
@@ -837,7 +857,7 @@ contract PublicSale is
             }
 
             if (refundAmount > 0 && userClaim.refundAmount == 0){
-                require(refundAmount <= IERC20(getToken).balanceOf(address(this)), "PublicSale: dont have refund ton");
+                require(refundAmount <= IERC20(getToken).balanceOf(address(this)), "dont have refund ton");
                 userClaim.refundAmount = refundAmount;
                 IERC20(getToken).safeTransfer(msg.sender, refundAmount);
 
@@ -860,12 +880,12 @@ contract PublicSale is
 
     /// @inheritdoc IPublicSale
     function depositWithdraw() external override {
-        require(adminWithdraw != true && exchangeTOS == true,"PublicSale : need the exchangeWTONtoTOS");
+        require(adminWithdraw != true && exchangeTOS == true,"need the exchangeWTONtoTOS");
 
         uint256 liquidityTON = hardcapCalcul();
         uint256 getAmount = totalExPurchasedAmount.add(totalOpenPurchasedAmount()).sub(liquidityTON);
         
-        require(getAmount <= IERC20(getToken).balanceOf(address(this)), "PublicSale: no token to receive");        
+        require(getAmount <= IERC20(getToken).balanceOf(address(this)), "haven't token");        
 
         adminWithdraw = true;
 
@@ -899,20 +919,20 @@ contract PublicSale is
         returns (uint256 amountOut)
     {
         require(amountIn > 0, "zero input amount");
-        require(block.timestamp > endDepositTime,"PublicSale: need to end the depositTime");
+        require(block.timestamp > endDepositTime,"need to end the depositTime");
 
         uint256 liquidityTON = hardcapCalcul();
-        require(liquidityTON > 0, "PublicSale: don't pass the hardCap");
+        require(liquidityTON > 0, "don't pass the hardCap");
 
         address poolAddress = LibPublicSale.getPoolAddress(wton,address(tos));
 
         (uint160 sqrtPriceX96, int24 tick,,,,,) =  IIUniswapV3Pool(poolAddress).slot0();
-        require(sqrtPriceX96 > 0, "pool is not initialized");
+        require(sqrtPriceX96 > 0, "pool not initial");
 
         int24 timeWeightedAverageTick = OracleLibrary.consult(poolAddress, 120);
         require(
             tick < LibPublicSale.acceptMaxTick(timeWeightedAverageTick, 60, 2),
-            "It's not allowed changed tick range."
+            "over changed tick range."
         );
 
         (uint256 amountOutMinimum, , uint160 sqrtPriceLimitX96)
@@ -930,7 +950,7 @@ contract PublicSale is
         
         //quoter 값이 더 크다면 quoter값이 minimum값으로 사용됨
         //quoter 값이 더 작으면 priceImpact가 더크게 작용하니 거래는 실패해야함
-        require(amountOutMinimum2 >= amountOutMinimum, "PublicSale : priceImpact over");
+        require(amountOutMinimum2 >= amountOutMinimum, "priceImpact over");
         
         uint256 wtonAmount = IERC20(wton).balanceOf(address(this));
         
@@ -938,7 +958,7 @@ contract PublicSale is
             IIWTON(wton).swapFromTON(liquidityTON);
             exchangeTOS = true;
         } else {
-            require(wtonAmount >= amountIn, "PublicSale : amountIn is too large");
+            require(wtonAmount >= amountIn, "amountIn over");
         }
 
         ISwapRouter.ExactInputSingleParams memory params =
