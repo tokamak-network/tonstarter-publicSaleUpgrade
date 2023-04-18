@@ -390,7 +390,7 @@ contract PublicSale is
             require(isProxyAdmin(msg.sender), "only DAO");
         }
         require(_changePercent <= maxPer && _changePercent >= minPer,"need to set min,max");
-        require((_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount)) >= (_hardcapAmount.mul(_saleTokenPrice).div(_payTokenPrice)), "over hardcap");
+        require((_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount)) >= (_hardcapAmount.mul(_payTokenPrice).div(_saleTokenPrice)), "over hardcap");
         // require(checkHardCapAmount(_totalExpectSaleAmount,_totalExpectOpenSaleAmount,_saleTokenPrice,_payTokenPrice,_hardcapAmount), "over hardcap");
         
         totalExpectSaleAmount = _totalExpectSaleAmount;
@@ -415,7 +415,7 @@ contract PublicSale is
     //     pure
     //     returns(bool check)
     // {
-    //     if (_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount) > _hardcapAmount.mul(_saleTokenPrice).div(_payTokenPrice)) {
+    //     if (_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount) > _hardcapAmount.mul(_payTokenPrice).div(_saleTokenPrice)) {
     //         check = true;
     //     } else {
     //         check = false;
