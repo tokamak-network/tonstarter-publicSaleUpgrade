@@ -8,7 +8,7 @@ async function deployLogic() {
     const [deployer] = await ethers.getSigners()
     console.log("Deploying contract with the account :", deployer.address)
     let PublicSale
-    let alreadyDeploy = true
+    let alreadyDeploy = false
     let libPublicSaleAddress = "0x31512fA8D38d0aD35c0FF8A2F4385dCE0003a368";
 
     if(!alreadyDeploy) {
@@ -35,7 +35,7 @@ async function deployLogic() {
 
     const saleContract = await PublicSale.connect(deployer).deploy()
     logicAddress = saleContract.address;
-    console.log("saleContract Address: ", saleContract.address)
+    console.log("PublicSaleContract Address: ", saleContract.address)
     await saleContract.deployed();
     console.log("logic deploy finish");
 }
@@ -47,7 +47,7 @@ async function deployFactory() {
     
     const publicSaleProxyFactory = await ethers.getContractFactory('PublicSaleProxyFactory')
     const AddressContract = await publicSaleProxyFactory.deploy()
-    console.log("AddressContract Address: ", AddressContract.address)
+    console.log("PublicSaleFactory Address: ", AddressContract.address)
     await AddressContract.deployed()
     console.log("deploy finished")
 
@@ -68,6 +68,20 @@ async function deployFactory() {
     const eventAddr2 = "0xcCcFc0c04c8c751f0ffF7CAf4340f2155BB352C8"
     const initializer = "0xE56f199482B6402Aabe9EFD19194c3dBdf789F31"
 
+    // //mainnet
+    // const tonAddress = "0x2be5e8c109e2197D077D13A82dAead6a9b3433C5"
+    // const wtonAddress = "0xc4A11aaf6ea915Ed7Ac194161d2fC9384F15bff2"
+    // const lockTOSAddress = "0x69b4A202Fa4039B42ab23ADB725aA7b1e9EEBD79" //lockTOSProxy
+    // const tosAddress = "0x409c4D8cd5d2924b9bc5509230d16a61289c8153"
+    // const uniRouter = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
+
+    // const minPer = 5
+    // const maxPer = 10
+
+    // const upgradeaddr = "0x15280a52E79FD4aB35F4B9Acbb376DCD72b44Fd1"
+    // const initialLiuiqidty = "0xcf9A97F0CBBc2eB588E3e4301773d13267616F10" //factory
+    // const eventAddr2 = "0x508d5FaDA6871348A5b4fb66f4A1F58b187Ce9Bd"
+    // const initializer = ""
 
     const BASE_TEN = 10
     const decimals = 18
@@ -81,7 +95,8 @@ async function deployFactory() {
     let bigTier4 = BigNumber.from(tier4).mul(BigNumber.from(BASE_TEN).pow(decimals))
     let delayTime = 604800;
 
-    console.log("logicAddress : ",logicAddress);
+    console.log("logicAddress check : ",logicAddress);
+
     await AddressContract.basicSet(
         [
             tonAddress,
@@ -118,7 +133,7 @@ async function deployFactory() {
 
 const main = async () => {
     await deployLogic()
-    // await deployFactory()
+    await deployFactory()
 }  // main
 
 main()

@@ -900,17 +900,6 @@ contract PublicSale is
         emit DepositWithdrawal(msg.sender, getAmount, liquidityTON);
     }
 
-    function parseRevertReason(bytes memory reason) private pure returns (uint256) {
-        if (reason.length != 32) {
-            if (reason.length < 68) revert('Unexpected error');
-            assembly {
-                reason := add(reason, 0x04)
-            }
-            revert(abi.decode(reason, (string)));
-        }
-        return abi.decode(reason, (uint256));
-    }
-
     function exchangeWTONtoTOS(
         uint256 amountIn
     ) 
@@ -979,6 +968,17 @@ contract PublicSale is
 
     function availableInitializer(address _addr) external view returns (bool result) {
         if (snapshot != 0 && isAdmin(_addr)) result = true;
+    }
+
+    function parseRevertReason(bytes memory reason) private pure returns (uint256) {
+        if (reason.length != 32) {
+            if (reason.length < 68) revert('Unexpected error');
+            assembly {
+                reason := add(reason, 0x04)
+            }
+            revert(abi.decode(reason, (string)));
+        }
+        return abi.decode(reason, (uint256));
     }
     
 }
