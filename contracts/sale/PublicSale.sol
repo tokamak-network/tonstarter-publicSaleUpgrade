@@ -391,7 +391,6 @@ contract PublicSale is
         }
         require(_changePercent <= maxPer && _changePercent >= minPer,"need to set min,max");
         require((_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount)) >= (_hardcapAmount.mul(_payTokenPrice).div(_saleTokenPrice)), "over hardcap");
-        // require(checkHardCapAmount(_totalExpectSaleAmount,_totalExpectOpenSaleAmount,_saleTokenPrice,_payTokenPrice,_hardcapAmount), "over hardcap");
         
         totalExpectSaleAmount = _totalExpectSaleAmount;
         totalExpectOpenSaleAmount = _totalExpectOpenSaleAmount;
@@ -403,24 +402,6 @@ contract PublicSale is
             changeTick = 18;
         }
     }
-
-    // function checkHardCapAmount(
-    //     uint256 _totalExpectSaleAmount,
-    //     uint256 _totalExpectOpenSaleAmount,
-    //     uint256 _saleTokenPrice,
-    //     uint256 _payTokenPrice,
-    //     uint256 _hardcapAmount
-    // )  
-    //     public
-    //     pure
-    //     returns(bool check)
-    // {
-    //     if (_totalExpectSaleAmount.add(_totalExpectOpenSaleAmount) > _hardcapAmount.mul(_payTokenPrice).div(_saleTokenPrice)) {
-    //         check = true;
-    //     } else {
-    //         check = false;
-    //     }
-    // }
 
     /// @inheritdoc IPublicSale
     function totalExpectOpenSaleAmountView()
