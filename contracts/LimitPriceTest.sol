@@ -20,10 +20,11 @@ contract LimitPriceTest {
     )   
         external
         view
+        returns (uint256 amountOutMinimum, uint256 priceLimit, uint160 sqrtPriceX96Limit)
     {
         address poolAddress = LibPublicSale.getPoolAddress(token0,token1);
 
-        (uint256 amountOutMinimum, uint256 priceLimit,)
+        (amountOutMinimum, priceLimit, sqrtPriceX96Limit)
             = LibPublicSale.limitPrameters(amountIn, poolAddress, token0, token1, tick);
 
         console.log("amountOutMinimum :",amountOutMinimum);
@@ -34,18 +35,20 @@ contract LimitPriceTest {
     function quoterCall(
         address _token0, 
         address _token1,
-        uint256 _amountIn
+        uint256 _amountIn,
+        uint160 _sqrtPriceX96Limit
     ) 
         external 
+        returns (uint256 amountOutMinimum, uint256 amountOutMinimum2)
     {
         (bool success,bytes memory result) = address(quoter).call(
             abi.encodeWithSignature(
                 "quoteExactInputSingle(address,address,uint24,uint256,uint160)", 
-                _token0,_token1,poolFee,_amountIn,0
+                _token0,_token1,poolFee,_amountIn,_sqrtPriceX96Limit
             )
         );
-        uint256 amountOutMinimum = parseRevertReason(result);
-        uint256 amountOutMinimum2 = amountOutMinimum * 995 / 1000;
+        amountOutMinimum = parseRevertReason(result);
+        amountOutMinimum2 = amountOutMinimum * 995 / 1000;
 
         console.log("success :", success);
         console.log("amountOutMinimum :",amountOutMinimum);

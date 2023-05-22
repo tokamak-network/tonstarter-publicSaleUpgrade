@@ -87,6 +87,7 @@ describe("Quoter test", () => {
     let bigwtonAmount5 = ethers.utils.parseUnits("59000", 27);
     let bigwtonAmount6 = ethers.utils.parseUnits("60000", 27);
     let bigwtonAmount7 = ethers.utils.parseUnits("57500", 27);
+    let bigwtonAmount8 = ethers.utils.parseUnits("269479", 27);
 
     let quoter;
 
@@ -296,12 +297,25 @@ describe("Quoter test", () => {
                 bigwtonAmount7,
                 wton.address,
                 tos.address,
-                19
+                36
             );
         })
 
         it("#3-10. check quoterCall input 57500 WTON", async () => {
             await limitPriceContract.quoterCall(wton.address,tos.address,bigwtonAmount7);
+        })
+
+        it("#3-11. check -9.77% priceImpact input 269479 WTON", async () => {
+            await limitPriceContract.limitPrice(
+                bigwtonAmount8,
+                wton.address,
+                tos.address,
+                36
+            );
+        })
+
+        it("#3-12. check quoterCall input 269479 WTON", async () => {
+            await limitPriceContract.quoterCall(wton.address,tos.address,bigwtonAmount8);
         })
     })
 })
